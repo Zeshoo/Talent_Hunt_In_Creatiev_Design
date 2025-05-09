@@ -1,0 +1,49 @@
+﻿@model List<Talent_Hunt.Models.Task>
+
+@{
+    ViewBag.Title = "Show Tasks";
+}
+
+<h2>All Tasks</h2>
+
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Task ID</th>
+                <th>Event ID</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Description</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Model)
+            {
+                <tr>
+                    <td>@task.Id</td>
+                    <td>@task.EventID</td>
+                    <td>@task.TaskStartTime</td>
+                    <td>@task.TaskEndTime</td>
+                    <td>@task.Description</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(task.Image))
+                        {
+                            <img src="http://localhost/TalentHunt1/Images/@task.Image" alt="Task Image" width="100" height="100" style="object-fit: cover; border-radius: 8px;" />
+                        }
+                        else
+                        {
+                            <span>No image</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No tasks available.</p>
+}

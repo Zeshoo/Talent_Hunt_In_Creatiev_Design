@@ -1,0 +1,108 @@
+﻿@model Talent_Hunt.Models.Event
+
+@{
+    ViewBag.Title = "Event Details";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success text-center mt-3 shadow-sm rounded-pill">
+        @TempData["Success"]
+    </div>
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4 text-primary">@Model.Title</h1>
+
+    <!-- Menu Button Aligned Right -->
+    <div class="mb-3 text-end">
+        <button id="menuButton" class="btn btn-primary rounded-pill px-4 shadow" onclick="toggleMenu()">Menu</button>
+    </div>
+
+    <!-- Menu Buttons Aligned Right -->
+    <div class="position-relative">
+        <div id="buttonMenu" class="bg-white border p-3 rounded shadow position-absolute end-0 mt-2" style="display: none; z-index: 1000; min-width: 200px;">
+
+            <div class="d-grid gap-2">
+                <a href="@Url.Action("ShowAssignedMembers", "Admin", new { eventId = Model.Id })" class="btn btn-outline-dark">Assigned Members</a>
+                <a href="@Url.Action("ShowTasks", "Admin", new { eventId = Model.Id })" class="btn btn-outline-secondary">Show Tasks</a>
+                <a href="@Url.Action("EventReport", "Admin", new { eventId = Model.Id })" class="btn btn-outline-info">View Report</a>
+                <a href="@Url.Action("Index", "ViewResult")" class="btn btn-outline-success">Result</a>
+                <a href="@Url.Action("DashBoard", "Admin")" class="btn btn-outline-danger">Back</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <img id="previewImage"
+                 src="@($"http://localhost/TalentHunt1/Images/{(Model.Image ?? "default-image.png")}")"
+                 class="img-fluid rounded shadow"
+                 style="height: 420px; object-fit: cover;" />
+            <div id="imageUploadContainer" class="mt-2" style="display: none;">
+                <input type="file" name="ImageFile" class="form-control" id="imageInput" accept="image/*" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <form id="eventDetailsForm" method="post" enctype="multipart/form-data" action="@Url.Action("UpdateEvent", "Admin")">
+                <input type="hidden" name="Id" value="@Model.Id" />
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title</label>
+                    <input type="text" name="Title" class="form-control" value="@Model.Title" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Event Date</label>
+                    <input type="date" name="EventDate" class="form-control" value="@Model.EventDate" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Registration Start Date</label>
+                    <input type="date" name="RegStartDate" class="form-control" value="@Model.RegStartDate" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Registration End Date</label>
+                    <input type="date" name="RegEndDate" class="form-control" value="@Model.RegEndDate" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Event Start Time</label>
+                    <input type="time" name="EventStartTime" class="form-control" value="@Model.EventStartTime" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Event End Time</label>
+                    <input type="time" name="EventEndTime" class="form-control" value="@Model.EventEndTime" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Details</label>
+                    <textarea name="Details" class="form-control" rows="5" readonly>@Model.Details</textarea>
+                </div>
+                <button type="submit" id="saveBtn" class="btn btn-success rounded-pill px-4 d-none">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleMenu() {
+        var menu = document.getElementById("buttonMenu");
+        menu.style.display = (menu.style.display === "none" || menu.style.display === "") ? "block" : "none";
+    }
+
+    function enableEdit() {
+        document.querySelectorAll('input, textarea').forEach(el => el.removeAttribute('readonly'));
+        document.getElementById('imageUploadContainer').style.display = 'block';
+        document.getElementById('saveBtn').classList.remove('d-none');
+    }
+
+    document.getElementById('imageInput').addEventListener('change', function (e) {
+        if (e.target.files && e.target.files[0]) {
+            document.getElementById('previewImage').src = URL.createObjectURL(e.target.files[0]);
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        const menu = document.getElementById('buttonMenu');
+        const button = document.getElementById('menuButton');
+        if (!menu.contains(event.target) && event.target !== button) {
+            menu.style.display = 'none';
+        }
+    });
+</script>

@@ -1,0 +1,45 @@
+﻿@model List<Talent_Hunt.Models.CommitteeMember>
+@{
+    var assignedMemberIds = ViewBag.AssignedMemberIds as List<int>;
+    var eventId = ViewBag.EventId;
+}
+
+<h2>Assign Committee Members to Event</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+else if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+else if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form method="post" id="assignCommitteeForm">
+    <input type="hidden" name="eventId" value="@eventId" />
+
+    <div>
+        @foreach (var member in Model)
+        {
+            <div class="checkbox">
+                <input type="checkbox" name="selectedMembers" value="@member.Id"
+                       @(assignedMemberIds.Contains(member.Id) ? "checked" : "") />
+                @member.Name
+            </div>
+        }
+    </div>
+
+    <div>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="pending" @(ViewBag.Status == "pending" ? "selected" : "")>Pending</option>
+            <option value="assigned" @(ViewBag.Status == "assigned" ? "selected" : "")>Assigned</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Assign Members</button>
+</form>

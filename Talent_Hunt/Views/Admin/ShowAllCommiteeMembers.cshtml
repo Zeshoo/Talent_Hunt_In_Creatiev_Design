@@ -1,0 +1,80 @@
+﻿@model List<Talent_Hunt.Models.CommitteeMember>
+
+@{
+    ViewBag.Title = "View All Committee Members";
+}
+
+<h2 class="mb-4">Committee Members</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<!-- Right-aligned Add button -->
+<div class="d-flex justify-content-end mb-3">
+    <a class="btn btn-outline-primary" href="@Url.Action("AddCommitteeMember", "Admin")">
+        <i class="fas fa-user-plus me-1"></i> Add Committee Member
+    </a>
+</div>
+
+<!-- Committee Members Table -->
+<table class="table table-hover table-bordered text-center align-middle shadow-sm">
+    <thead class="table-light">
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in Model)
+        {
+            <tr>
+                <td>
+                    <img src="@($"http://localhost/TalentHunt1/Images/{member.Image ?? "default.png"}")"
+                         alt="Profile Image"
+                         style="width: 50px; height: 50px; object-fit: cover;"
+                         class="rounded-circle shadow-sm border border-secondary" />
+                </td>
+                <td class="fw-semibold">@member.Name</td>
+                <td>@member.Gender</td>
+                <td>
+                    <a href="@Url.Action("Edit", "Admin", new { id = member.Id })" class="btn btn-sm btn-info me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <button class="btn btn-sm btn-danger" onclick="deleteMember(@member.Id)">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- JavaScript: Delete AJAX -->
+<<script>
+    function deleteMember(id) {
+        if (confirm("Are you sure you want to delete this member?")) {
+            $.ajax({
+                url: '/Admin/DeleteCommitteeMember',
+                type: 'POST',
+                data: JSON.stringify({ id: id }),
+                contentType: "application/json; charset=utf-8",
+                success: function () {
+                    alert("Member deleted successfully.");
+                    location.reload();
+                },
+                error: function () {
+                    alert("Error occurred while deleting member.");
+                }
+            });
+        }
+    }
+</script>
+

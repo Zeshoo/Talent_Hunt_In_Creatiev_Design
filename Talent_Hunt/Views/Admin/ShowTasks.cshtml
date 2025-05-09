@@ -1,0 +1,40 @@
+﻿@model List<Talent_Hunt.Models.Task>
+
+@{
+    ViewBag.Title = "Task List";
+}
+
+<h2 class="mb-4">Tasks for Event</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-warning">No tasks available for this event.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var task in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm">
+                    @if (!string.IsNullOrEmpty(task.Image))
+                    {
+                        <img src="http://localhost/TalentHunt1/Images/@task.Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Task Image" />
+                    }
+                    else
+                    {
+                        <div class="card-img-top text-center bg-light py-5 text-muted">No Image</div>
+                    }
+
+                    <div class="card-body">
+                        <h5 class="card-title">@task.Description</h5>
+                        <p class="card-text">
+                            <strong>Start Time:</strong> @task.TaskStartTime <br />
+                            <strong>End Time:</strong> @task.TaskEndTime
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

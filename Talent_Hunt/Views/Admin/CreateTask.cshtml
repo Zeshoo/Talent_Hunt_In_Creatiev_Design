@@ -1,0 +1,45 @@
+﻿@model Talent_Hunt.Models.TaskDto
+
+@{
+    ViewBag.Title = "Create Task";
+}
+
+<h2>Create Task</h2>
+
+@using (Html.BeginForm("CreateTask", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.EventID)
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Description)
+        @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 4 })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.TaskStartTime)
+        @Html.TextBoxFor(model => model.TaskStartTime, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.TaskEndTime)
+        @Html.TextBoxFor(model => model.TaskEndTime, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+    </div>
+
+    <div class="form-group">
+        @Html.Label("Image")
+        <input type="file" name="Image" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Task</button>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+}
