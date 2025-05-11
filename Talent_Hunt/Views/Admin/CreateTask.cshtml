@@ -2,44 +2,54 @@
 
 @{
     ViewBag.Title = "Create Task";
+    var eventId = ViewBag.EventID;
 }
 
-<h2>Create Task</h2>
+<h2 class="text-center text-primary fw-bold mb-4">Create Task</h2>
 
-@using (Html.BeginForm("CreateTask", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("CreateTask", "Admin", FormMethod.Post, new { enctype = "multipart/form-data", @class = "shadow p-4 rounded bg-light" }))
 {
     @Html.AntiForgeryToken()
-
     @Html.HiddenFor(model => model.EventID)
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.Description)
-        @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 4 })
+    <div class="mb-3">
+        @Html.LabelFor(model => model.Description, new { @class = "form-label fw-semibold" })
+        @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 4, placeholder = "Enter task description..." })
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.TaskStartTime)
-        @Html.TextBoxFor(model => model.TaskStartTime, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            @Html.LabelFor(model => model.TaskStartTime, new { @class = "form-label fw-semibold" })
+            @Html.TextBoxFor(model => model.TaskStartTime, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+        </div>
+        <div class="col-md-6 mb-3">
+            @Html.LabelFor(model => model.TaskEndTime, new { @class = "form-label fw-semibold" })
+            @Html.TextBoxFor(model => model.TaskEndTime, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+        </div>
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.TaskEndTime)
-        @Html.TextBoxFor(model => model.TaskEndTime, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
-    </div>
-
-    <div class="form-group">
-        @Html.Label("Image")
+    <div class="mb-4">
+        @Html.Label("Task Image", new { @class = "form-label fw-semibold" })
         <input type="file" name="Image" class="form-control" />
     </div>
 
-    <button type="submit" class="btn btn-primary">Create Task</button>
+    <div class="d-flex justify-content-between">
+        @*<a href="@Url.Action("ShowTasks", "Admin", new { eventId = eventId })"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-list-check me-2 text-secondary"></i>Show Tasks
+        </a>*@
+
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus-circle me-1"></i>Create Task
+        </button>
+    </div>
 }
 
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
+    <div class="alert alert-danger mt-4 text-center fw-semibold">@TempData["ErrorMessage"]</div>
 }
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success mt-4 text-center fw-semibold">@TempData["SuccessMessage"]</div>
 }

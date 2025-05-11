@@ -4,42 +4,56 @@
     var eventId = ViewBag.EventId;
 }
 
-<h2>Assign Committee Members to Event</h2>
+<h2 class="mb-4 text-primary text-center fw-bold">Assign Committee Members to Event</h2>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success text-center fw-semibold">@TempData["Success"]</div>
 }
 else if (TempData["Warning"] != null)
 {
-    <div class="alert alert-warning">@TempData["Warning"]</div>
+    <div class="alert alert-warning text-center fw-semibold">@TempData["Warning"]</div>
 }
 else if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger text-center fw-semibold">@TempData["Error"]</div>
 }
 
-<form method="post" id="assignCommitteeForm">
+<form method="post" id="assignCommitteeForm" class="shadow p-4 rounded bg-light">
     <input type="hidden" name="eventId" value="@eventId" />
 
-    <div>
-        @foreach (var member in Model)
-        {
-            <div class="checkbox">
-                <input type="checkbox" name="selectedMembers" value="@member.Id"
-                       @(assignedMemberIds.Contains(member.Id) ? "checked" : "") />
-                @member.Name
-            </div>
-        }
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Select Committee Members:</label>
+        <div class="row row-cols-1 row-cols-md-2 g-2">
+            @foreach (var member in Model)
+            {
+                <div class="form-check col">
+                    <input class="form-check-input" type="checkbox" name="selectedMembers" value="@member.Id"
+                           @(assignedMemberIds.Contains(member.Id) ? "checked" : "") id="member_@member.Id" />
+                    <label class="form-check-label" for="member_@member.Id">
+                        @member.Name
+                    </label>
+                </div>
+            }
+        </div>
     </div>
 
-    <div>
-        <label for="status">Status:</label>
-        <select id="status" name="status">
+    <div class="mb-3">
+        <label for="status" class="form-label fw-semibold">Status:</label>
+        <select id="status" name="status" class="form-select">
             <option value="pending" @(ViewBag.Status == "pending" ? "selected" : "")>Pending</option>
             <option value="assigned" @(ViewBag.Status == "assigned" ? "selected" : "")>Assigned</option>
         </select>
     </div>
 
-    <button type="submit" class="btn btn-primary">Assign Members</button>
+    <div class="d-flex justify-content-between align-items-center">
+        <a href="@Url.Action("ShowAssignedMembers", "Admin", new { eventId = eventId })"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-users-cog me-2 text-dark"></i>Assigned Members
+        </a>
+
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-user-plus me-1"></i>Assign Members
+        </button>
+    </div>
 </form>

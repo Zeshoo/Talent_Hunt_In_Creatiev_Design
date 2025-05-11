@@ -109,16 +109,19 @@
     }
 </style>
 @{
-    var userId = Session["UserID"];
+    var id = Session["UserID"];
+    var committeeMemberId = Session["UserID"];
 }
 
 <!-- Sidebar Menu -->
 <div class="sidebar" id="sidebarMenu">
     <h5 class="text-dark mb-4"><i class="fas fa-bars me-2"></i>Menu</h5>
-    <a class="btn btn-outline-info w-100" href="@Url.Action("AcceptReject", "Admin", new { id = userId})">
+    <a class="btn btn-outline-info w-100" href="@Url.Action("ViewAssignments", "Admin", new { userId = id})">
         <i class="fas fa-eye me-1"></i> View Assignment
     </a>
-
+    <a class="btn btn-outline-info w-100" href="@Url.Action("EventsTohandle", "Admin", new { userId = id})">
+        <i class="fas fa-chart-line me-1"></i> Events To Handle
+    </a>
 </div>
 
 <div class="container-fluid mt-4">
@@ -137,7 +140,12 @@
             </div>
 
             <div class="filter-section">
-                <h6><i class="fas fa-filter me-2"></i>Filter Events</h6>
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Events</h6>
+                    <a class="btn btn-outline-primary" href="@Url.Action("AssignedEvents", "Admin", new { userId = id})">
+                        <i class="fas fa-tasks me-1"></i> Events To Handle
+                    </a>
+                </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input eventFilter" type="radio" name="filter" value="all" checked />
                     <label class="form-check-label">All Events</label>

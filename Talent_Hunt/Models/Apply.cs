@@ -17,6 +17,6 @@ namespace Talent_Hunt.Models
         public int Id { get; set; }
         public Nullable<int> UserId { get; set; }
         public Nullable<int> EventId { get; set; }
-        public string Status { get; set; }
+        public string status { get; set; }
     }
 }

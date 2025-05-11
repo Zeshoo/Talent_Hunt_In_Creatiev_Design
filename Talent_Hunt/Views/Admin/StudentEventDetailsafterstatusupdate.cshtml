@@ -1,0 +1,129 @@
+﻿@model Talent_Hunt.Models.Event
+
+@{
+    ViewBag.Title = "Event Details";
+    var userId = Session["UserId"];
+    var userName = Session["UserName"];
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success text-center mt-3 shadow-sm rounded-3">
+        @TempData["Success"]
+    </div>
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary fw-bold d-flex align-items-center gap-2">
+            <i class="fas fa-calendar-day fs-3"></i> @Model.Title
+        </h1>
+
+        <!-- Apply Button -->
+        <!-- Show Tasks Link -->
+        <a href="@Url.Action("ShowTasksForStudents", "Admin", new { EventId = Model.Id })"
+           class="btn btn-primary btn-lg rounded-pill px-4 d-flex align-items-center gap-2">
+            <i class="fas fa-paper-plane"></i> Show Tasks
+        </a>
+
+
+    </div>
+
+    <div class="card shadow rounded-4 p-4">
+        <div class="row g-5">
+            <div class="col-lg-5">
+                <div class="rounded-4 overflow-hidden shadow-sm" style="height: 450px;">
+                    <img id="previewImage"
+                         src="@($"http://localhost/TalentHunt1/Images/{(Model.Image ?? "default-image.png")}")"
+                         alt="Event Image"
+                         class="w-100 h-100 object-fit-cover rounded-3 border border-secondary" />
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <form>
+                    <!-- Event Title -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-primary fs-5">Event Title</label>
+                        <input type="text" name="Title" class="form-control form-control-lg rounded-3" value="@Model.Title" readonly />
+                    </div>
+
+                    <!-- Event Date -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold fs-6">Event Date</label>
+                            <input type="date" name="EventDate" class="form-control form-control-lg rounded-3" value="@Model.EventDate" readonly />
+                        </div>
+                    </div>
+
+                    <!-- Registration Period -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold fs-6">Registration Period</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="date" name="RegStartDate" class="form-control form-control-lg rounded-3" value="@Model.RegStartDate" readonly />
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" name="RegEndDate" class="form-control form-control-lg rounded-3" value="@Model.RegEndDate" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event Time -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold fs-6">Event Time</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="time" name="EventStartTime" class="form-control form-control-lg rounded-3" value="@Model.EventStartTime" readonly />
+                                </div>
+                                <div class="col-6">
+                                    <input type="time" name="EventEndTime" class="form-control form-control-lg rounded-3" value="@Model.EventEndTime" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1100px;
+    }
+
+    .card {
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+            transform: translateY(-5px);
+        }
+
+    #previewImage {
+        object-fit: cover;
+        border-radius: 0.75rem;
+        transition: box-shadow 0.3s ease;
+    }
+
+        #previewImage:hover {
+            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.4);
+        }
+
+    input[readonly] {
+        background-color: #f8f9fa !important;
+        color: #495057 !important;
+        cursor: not-allowed;
+        box-shadow: none !important;
+    }
+
+    input:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+</style>

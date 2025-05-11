@@ -1,0 +1,87 @@
+﻿@model List<Talent_Hunt.Models.AssignedMemberDetails>
+
+@{
+    ViewBag.Title = "View Assignments";
+}
+
+<h2>Assigned Members</h2>
+
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Member Name</th>
+                <th>Status</th>
+                <th>Event Title</th>
+                <th>Event Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var assignment in Model)
+            {
+                <tr id="row-@assignment.Id">
+                    <td>@assignment.MemberName</td>
+                    <td id="status-@assignment.Id">@assignment.Status</td>
+                    <td>@assignment.EventTitle</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(assignment.EventImage))
+                        {
+                            <img src="@($"http://localhost/TalentHunt1/Images/{assignment.EventImage ?? "default.png"}")" alt="Event Image" class="event-image" />
+                        }
+                        else
+                        {
+                            <span>No image available</span>
+                        }
+                    </td>
+
+                    <td>
+                        <button>
+
+                            <a href="@Url.Action("AcceptReject", "Admin", new { id = assignment.Id, status = "Accepted" })" class="btn btn-success">Accept</a>
+                        </button>
+                        <button>
+                            <a href="@Url.Action("AcceptReject", "Admin", new { id = assignment.Id, status = "Rejected" })" class="btn btn-danger">Reject</a>
+
+
+
+                        </button>
+                    </td>
+
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No assignments found.</p>
+}
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $(".update-btn").click(function () {
+                var id = $(this).data("id");
+                var status = $(this).data("status");
+
+                $.ajax({
+                    url: "/api/Main/RequestAcceptReject",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ Id: id, Status: status }),
+                    success: function (response) {
+                        $('#status-' + id).text(status); // directly use status sent
+                        alert("Request " + status + " successfully.");
+                    },
+                    error: function (xhr) {
+                        alert("Error: " + (xhr.responseText || "Could not update status."));
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewBag.Title = "Submit Task";
+    var userId = Session["UserId"];
+    var taskId = ViewBag.TaskID;
+}
+
+<h2>Submit Task</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.Message as string))
+{
+    <div class="alert alert-info">
+        @ViewBag.Message
+    </div>
+
+    <script>
+        setTimeout(function () {
+            window.location.href = '@Url.Action("StudentDashBoard", "Admin")';
+        }, 3000);
+    </script>
+}
+
+
+

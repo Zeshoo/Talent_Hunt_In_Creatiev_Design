@@ -1,35 +1,29 @@
 ﻿@{
-    ViewBag.Title = "Application Result";
+    ViewBag.Title = "Apply for Event";
+    int userId = Convert.ToInt32(Request.QueryString["UserId"]);
+    int eventId = Convert.ToInt32(Request.QueryString["EventId"]);
 }
 
-<h2>Application Result</h2>
+<h2>Apply for Event</h2>
 
-@if (ViewBag.Error != null)
+@if (!string.IsNullOrEmpty(ViewBag.Message as string))
 {
-    <div class="alert alert-danger" role="alert">
-        <strong>Error:</strong> @ViewBag.Error
-    </div>
-}
-else
-{
-    <div class="alert alert-success" role="alert">
-        <strong>Application submitted successfully!</strong>
-    </div>
-
-    <table class="table table-bordered mt-3">
-        <tr>
-            <th>Student Name</th>
-            <td>@ViewBag.StudentName</td>
-        </tr>
-        <tr>
-            <th>Event Title</th>
-            <td>@ViewBag.EventTitle</td>
-        </tr>
-        <tr>
-            <th>Status</th>
-            <td>@ViewBag.Status</td>
-        </tr>
-    </table>
+    <div class="alert alert-info">@ViewBag.Message</div>
 }
 
-<a href="@Url.Action("Admin", "StudentDashBoard")" class="btn btn-secondary mt-3">Back to Events</a>
+<form method="post" action="/Admin/Apply">
+    <input type="hidden" name="UserId" value="@userId" />
+    <input type="hidden" name="EventId" value="@eventId" />
+
+    <div class="form-group">
+        <label for="PhoneNo">Phone Number</label>
+        <input type="text" class="form-control" name="PhoneNo" required />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="City">City</label>
+        <input type="text" class="form-control" name="City" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Submit Application</button>
+</form>

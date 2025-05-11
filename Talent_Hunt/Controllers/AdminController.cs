@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,7 @@ namespace Talent_Hunt.Controllers
 {
     public class AdminController : Controller
     {
-        private Talent_HuntEntities1 db = new Talent_HuntEntities1();
+        private Talent_HuntEntities3 db = new Talent_HuntEntities3();
         private readonly string SignUpApi = "http://localhost/TalentHunt1/api/Main/Signup";
         private readonly string getUserApi = "http://localhost/TalentHunt1/api/Main/getUser";
         private static readonly HttpClient apiClient = new HttpClient();
@@ -30,6 +31,8 @@ namespace Talent_Hunt.Controllers
         private readonly string assignMemberApiUrl = "http://localhost/TalentHunt1/api/Main/AssignedMembersToEvent";
         private readonly string addCommitteeMemberApiUrl = "http://localhost/TalentHunt1/api/Main/AddCommitteeMember";
         private readonly string assignApiUrl = "http://localhost/TalentHunt1/api/Main/AssignedMemberToEvent";
+        private readonly string ApplyApi = "http://localhost/TalentHunt1/api/Main/Apply";
+        private readonly string ApplicationView = "http://localhost/TalentHunt1/api/Main/ViewApplications";
         private readonly HttpClient client = new HttpClient();
         public ActionResult Index()
         {
@@ -142,11 +145,50 @@ namespace Talent_Hunt.Controllers
             return View(events);
         }
         [HttpGet]
+        public async Task<ActionResult> EventDetails(int id)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    // Use the original API endpoint to get event details
+                    HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/Main/ShowAllEvents");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string data = await response.Content.ReadAsStringAsync();
+                        var events = JsonConvert.DeserializeObject<List<Event>>(data);
+
+                        // Find the event with the given id
+                        var eventItem = events.FirstOrDefault(e => e.Id == id);
+
+                        if (eventItem != null)
+                        {
+                            return View(eventItem); // Pass event details to view
+                        }
+                        else
+                        {
+                            return HttpNotFound("Event not found."); // Event not found
+                        }
+                    }
+                    else
+                    {
+                        return HttpNotFound("Error retrieving events.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet]
         public async Task<ActionResult> CommitteeDashBoard()
         {
             if (Session["UserID"] != null)
             {
                 int userId = Convert.ToInt32(Session["UserID"]);
+              //  int committeeMemberId = Convert.ToInt32(Session["UserID"]);
                 // Use userId here
             }
 
@@ -162,17 +204,37 @@ namespace Talent_Hunt.Controllers
             }
             return View(events);
         }
+        public async Task<ActionResult> AssignedEvents(int userId)
+        {
+            List<AssignedEventViewModel> assignedEvents = new List<AssignedEventViewModel>();
+
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost/TalentHunt1/"); // Replace with your actual base URL
+                HttpResponseMessage response = await client.GetAsync($"api/Main/GetAssignedEventsForMember?userId={userId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    assignedEvents = JsonConvert.DeserializeObject<List<AssignedEventViewModel>>(jsonData);
+                }
+                else
+                {
+                    ViewBag.Error = "Failed to load assigned events.";
+                }
+            }
+
+            return View(assignedEvents);
+        }
+
         [HttpGet]
         public async Task<ActionResult> StudentDashBoard()
         {
             List<Event> events = new List<Event>();
-            //List<Users> users = new List<Users>();
-
-          
             string userRole = Session["UserRole"] as string;
             string userName = Session["UserName"] as string;
-
             int userId = Convert.ToInt32(Session["UserId"]);
+
             using (HttpClient client = new HttpClient())
             {
                 HttpResponseMessage response = await client.GetAsync(apiUrl);
@@ -182,10 +244,53 @@ namespace Talent_Hunt.Controllers
                     events = JsonConvert.DeserializeObject<List<Event>>(data);
                 }
             }
-            return RedirectToAction("StudentDashBoard");
+
+            // Return the view and pass the list of events to it
+            return View(events);
         }
         [HttpGet]
-        public async Task<ActionResult> ShowTasks(int eventid)
+        public async Task<ActionResult> CommitteeMemberEventDetailsAfterStatusUpdate(int eventId)
+        {
+            try
+            {
+                string userRole = Session["UserRole"] as string;
+                string userName = Session["UserName"] as string;
+                int userId = Convert.ToInt32(Session["UserId"]);
+                using (HttpClient client = new HttpClient())
+                {
+                    // Use the original API endpoint to get event details
+                    HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/Main/ShowAllEvents");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string data = await response.Content.ReadAsStringAsync();
+                        var events = JsonConvert.DeserializeObject<List<Event>>(data);
+
+                        // Find the event with the given id
+                        var eventItem = events.FirstOrDefault(e => e.Id == eventId);
+
+                        if (eventItem != null)
+                        {
+                            return View(eventItem); // Pass event details to view
+                        }
+                        else
+                        {
+                            return HttpNotFound("Event not found."); // Event not found
+                        }
+                    }
+                    else
+                    {
+                        return HttpNotFound("Error retrieving events.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> ShowTasksForCommitteeMember(int eventid)
         {
             List<Talent_Hunt.Models.Task> tasks = new List<Talent_Hunt.Models.Task>();
 
@@ -207,6 +312,336 @@ namespace Talent_Hunt.Controllers
 
             return View(tasks);
         }
+        [HttpGet]
+        public async Task<ActionResult> StudentEventDetails(int id)
+        {
+            try
+            {
+                string userRole = Session["UserRole"] as string;
+                string userName = Session["UserName"] as string;
+                int userId = Convert.ToInt32(Session["UserId"]);
+                using (HttpClient client = new HttpClient())
+                {
+                    // Use the original API endpoint to get event details
+                    HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/Main/ShowAllEvents");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string data = await response.Content.ReadAsStringAsync();
+                        var events = JsonConvert.DeserializeObject<List<Event>>(data);
+
+                        // Find the event with the given id
+                        var eventItem = events.FirstOrDefault(e => e.Id == id);
+
+                        if (eventItem != null)
+                        {
+                            return View(eventItem); // Pass event details to view
+                        }
+                        else
+                        {
+                            return HttpNotFound("Event not found."); // Event not found
+                        }
+                    }
+                    else
+                    {
+                        return HttpNotFound("Error retrieving events.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> StudentEventDetailsafterstatusupdate(int id)
+        {
+            try
+            {
+                string userRole = Session["UserRole"] as string;
+                string userName = Session["UserName"] as string;
+                int userId = Convert.ToInt32(Session["UserId"]);
+                using (HttpClient client = new HttpClient())
+                {
+                    // Use the original API endpoint to get event details
+                    HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/Main/ShowAllEvents");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string data = await response.Content.ReadAsStringAsync();
+                        var events = JsonConvert.DeserializeObject<List<Event>>(data);
+
+                        // Find the event with the given id
+                        var eventItem = events.FirstOrDefault(e => e.Id == id);
+
+                        if (eventItem != null)
+                        {
+                            return View(eventItem); // Pass event details to view
+                        }
+                        else
+                        {
+                            return HttpNotFound("Event not found."); // Event not found
+                        }
+                    }
+                    else
+                    {
+                        return HttpNotFound("Error retrieving events.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Apply(int UserId, int EventId)
+        {
+            using (var client = new HttpClient())
+            {
+                var values = new Dictionary<string, string>
+        {
+            { "UserId", UserId.ToString() },
+            { "EventId", EventId.ToString() }
+        };
+
+                var content = new FormUrlEncodedContent(values);
+                var response = await client.PostAsync(ApplyApi, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    TempData["Message"] = result;
+                }
+                else
+                {
+                    TempData["Message"] = await response.Content.ReadAsStringAsync();
+                }
+
+                return RedirectToAction("StudentDashBoard");
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ViewApplications(int eventId)
+        {
+            List<ApplicationViewModel> applications = new List<ApplicationViewModel>();
+
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync($"{ApplicationView}?eventId={eventId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = await response.Content.ReadAsStringAsync();
+                    applications = JsonConvert.DeserializeObject<List<ApplicationViewModel>>(data);
+                }
+                else
+                {
+                    TempData["Error"] = await response.Content.ReadAsStringAsync();
+                }
+            }
+
+            ViewBag.EventId = eventId;
+            return View(applications);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> UpdateApplicationStatus(int ApplyId, string newStatus)
+        {
+            using (var client = new HttpClient())
+            {
+                var values = new Dictionary<string, string>
+        {
+            { "applyId", ApplyId.ToString() },
+            { "newStatus", newStatus }
+        };
+
+                var content = new FormUrlEncodedContent(values);
+                var response = await client.PostAsync("http://localhost/TalentHunt1/api/Main/UpdateApplicationStatus", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Message"] = $"Application updated successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = await response.Content.ReadAsStringAsync();
+                }
+            }
+
+            // Redirect back to applications list or dashboard
+            return RedirectToAction("DashBoard");
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ShowTasks(int eventid)
+        {
+            List<Talent_Hunt.Models.Task> tasks = new List<Talent_Hunt.Models.Task>();
+
+            using (HttpClient client = new HttpClient())
+            {
+                string apiUrl = $"http://localhost/TalentHunt1/api/Main/ShowTask?eventid={eventid}";
+
+                HttpResponseMessage response = await client.GetAsync(apiUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    string data = await response.Content.ReadAsStringAsync();
+                    tasks = JsonConvert.DeserializeObject<List<Talent_Hunt.Models.Task>>(data);
+                }
+                else
+                {
+                    ViewBag.Message = "Failed to load tasks";
+                }
+            }
+
+            ViewBag.EventID = eventid; // <-- set it for use in the view
+            return View(tasks);
+        }
+
+
+
+        // Controllers/AdminController.cs
+        [HttpGet]
+        public async Task<ActionResult> ShowTasksForStudents(int eventid)
+        {
+            var model = new TaskListViewModel
+            {
+                Tasks = new List<Talent_Hunt.Models.Task>(),
+                EventDate = DateTime.MinValue
+            };
+
+            using (HttpClient client = new HttpClient())
+            {
+                string taskApiUrl = $"http://localhost/TalentHunt1/api/Main/ShowTask?eventid={eventid}";
+                string eventApiUrl = $"http://localhost/TalentHunt1/api/Main/GetEventById?eventid={eventid}";
+
+                // Get Tasks
+                var taskResponse = await client.GetAsync(taskApiUrl);
+                if (taskResponse.IsSuccessStatusCode)
+                {
+                    string taskData = await taskResponse.Content.ReadAsStringAsync();
+                    model.Tasks = JsonConvert.DeserializeObject<List<Talent_Hunt.Models.Task>>(taskData);
+                }
+
+                // Get Event
+                var eventResponse = await client.GetAsync(eventApiUrl);
+                if (eventResponse.IsSuccessStatusCode)
+                {
+                    string eventData = await eventResponse.Content.ReadAsStringAsync();
+
+                    // Deserialize as dynamic to safely parse date string
+                    dynamic eventObj = JsonConvert.DeserializeObject<dynamic>(eventData);
+                    string dateString = eventObj?.EventDate;
+
+                    if (DateTime.TryParse(dateString, out DateTime parsedDate))
+                    {
+                        model.EventDate = parsedDate;
+                    }
+                }
+            }
+
+            return View(model);
+        }
+
+
+
+
+        public async System.Threading.Tasks.Task<ActionResult> TaskDetails(int id)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    int userId = (int)Session["UserId"];
+
+                    client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+                    HttpResponseMessage response = await client.GetAsync($"api/TaskDetails/{id}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonString = await response.Content.ReadAsStringAsync();
+                        var taskData = JsonConvert.DeserializeObject<Talent_Hunt.Models.Task>(jsonString);
+                        return View(taskData);  // <-- Make sure your view expects Talent_Hunt.Models.Task
+                    }
+                    else if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        ViewBag.Error = "Task not found.";
+                        return View("Error");
+                    }
+                    else
+                    {
+                        ViewBag.Error = "An error occurred.";
+                        return View("Error");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View("Error");
+            }
+        }
+
+
+
+
+
+        [HttpPost]
+        public async Task<ActionResult> SubmitTask(HttpPostedFileBase file, Submission submission,int taskId)
+        {
+            string message = "";
+            ViewBag.TaskID = taskId;
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+
+                    using (var content = new MultipartFormDataContent())
+                    {
+                        int userId = (int)Session["UserId"];
+
+                        if (file != null && file.ContentLength > 0)
+                        {
+                            var fileStreamContent = new StreamContent(file.InputStream);
+                            fileStreamContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+                            {
+                                Name = "\"file\"",
+                                FileName = "\"" + file.FileName + "\""
+                            };
+                            fileStreamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                            content.Add(fileStreamContent);
+                        }
+                        submission.UserID = userId;
+                        string submitJson = JsonConvert.SerializeObject(submission);
+                        content.Add(new StringContent(submitJson, Encoding.UTF8, "application/json"), "submitInfo");
+
+                        var response = await client.PostAsync("api/Main/SubmitTask", content);
+                        var responseContent = await response.Content.ReadAsStringAsync();
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            message = "Task submitted successfully: " + responseContent;
+                        }
+                        else
+                        {
+                            message = "Error: " + responseContent;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = "Exception: " + ex.Message;
+            }
+
+            ViewBag.Message = message;
+            return View();
+        }
+
 
 
         [HttpGet]
@@ -216,7 +651,7 @@ namespace Talent_Hunt.Controllers
         }
         [HttpPost]
         public async Task<ActionResult> CreateEvent(HttpPostedFileBase eventImage, string eventTitle, string description,
- string regStartDate, string regEndDate, string eventDate, string startTime, string endTime, string[] rules)
+                 string regStartDate, string regEndDate, string eventDate, string startTime, string endTime)
         {
             try
             {
@@ -259,30 +694,7 @@ namespace Talent_Hunt.Controllers
 
                     // Deserialize event ID
                     var createdEvent = JsonConvert.DeserializeObject<Event>(responseBody);
-                    int createdEventId = createdEvent.Id;  // Extract event ID
-
-                    // ✅ Now, send rules to the API
-                    if (rules != null && rules.Length > 0 && createdEventId > 0)
-                    {
-                        var rulesData = new
-                        {
-                            EventID = createdEventId,
-                            Rules = rules.ToList()
-                        };
-
-                        string rulesJson = JsonConvert.SerializeObject(rulesData);
-                        using (var rulesClient = new HttpClient())
-                        {
-                            rulesClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                            var rulesContent = new StringContent(rulesJson, Encoding.UTF8, "application/json");
-
-                           // HttpResponseMessage rulesResponse = await rulesClient.PostAsync(addRulesApiUrl, rulesContent);
-                           // string rulesResponseBody = await rulesResponse.Content.ReadAsStringAsync();
-
-                           // if (!rulesResponse.IsSuccessStatusCode)
-                           
-                        }
-                    }
+                    int createdEventId = createdEvent.Id;  
 
                     TempData["Success"] = "Event created successfully ";
                     return RedirectToAction("CreateEvent");
@@ -342,12 +754,13 @@ namespace Talent_Hunt.Controllers
         // POST: Admin/CreateTask
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateTask(TaskDto model, HttpPostedFileBase Image)
+        public async Task<ActionResult> CreateTask(int eventid,TaskDto model, HttpPostedFileBase Image)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
+                    ViewBag.EventId = eventid;
                     // Send data to API using MultipartFormDataContent instead of JSON
                     using (var client = new HttpClient())
                     {
@@ -422,46 +835,190 @@ namespace Talent_Hunt.Controllers
             TempData["ErrorMessage"] = "Failed to create task.";
             return View(model);
         }
-
-
         [HttpGet]
-        public async Task<ActionResult> EventDetails(int id)
+        public async Task<ActionResult> TaskDetailsForCommitteeMember(int id)
+        {
+            TaskDto task = null;
+
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+                HttpResponseMessage response = await client.GetAsync("api/Main/TaskDetails?id=" + id);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    task = JsonConvert.DeserializeObject<TaskDto>(jsonData);
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Failed to retrieve task details.";
+                }
+            }
+
+            return View(task);
+        }
+        [HttpGet]
+        public async Task<ActionResult> ViewSubmissions(int taskId)
+        {
+            var model = new TaskDetailsWithSubmissionsViewModel();
+
+            using (var client = new HttpClient())
+            {
+                // 1. Get Task Details
+                string taskApiUrl = $"http://localhost/TalentHunt1/api/Main/TaskDetails/{taskId}";
+                var taskResponse = await client.GetAsync(taskApiUrl);
+
+                if (taskResponse.IsSuccessStatusCode)
+                {
+                    var taskJson = await taskResponse.Content.ReadAsStringAsync();
+                    model.Task = JsonConvert.DeserializeObject<TaskDto>(taskJson);
+                }
+                else
+                {
+                    ViewBag.Message = "Task details not found.";
+                    return View(model);  // Show empty model with message
+                }
+
+                // 2. Get Submissions
+                string submissionsApiUrl = $"http://localhost/TalentHunt1/api/Main/ViewSubmissions?taskId={taskId}";
+
+                var subResponse = await client.GetAsync(submissionsApiUrl);
+
+                if (subResponse.IsSuccessStatusCode)
+                {
+                    var subJson = await subResponse.Content.ReadAsStringAsync();
+                    model.Submissions = JsonConvert.DeserializeObject<List<SubmissionViewModel>>(subJson);
+                }
+                else
+                {
+                    model.Submissions = new List<SubmissionViewModel>();
+                    ViewBag.SubmissionMessage = "No submissions found for this task.";
+                }
+            }
+
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<ActionResult> UpdateTask(Talent_Hunt.Models.Task model, HttpPostedFileBase Image)
         {
             try
             {
-                using (HttpClient client = new HttpClient())
+                using (var client = new HttpClient())
                 {
-                    // Use the original API endpoint to get event details
-                    HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/Main/ShowAllEvents");
+                    var requestContent = new MultipartFormDataContent();
+
+                    // Add form fields
+                    requestContent.Add(new StringContent(model.Id.ToString()), "Id");
+                    requestContent.Add(new StringContent(model.EventID.ToString()), "EventID");
+                    requestContent.Add(new StringContent(model.TaskStartTime), "TaskStartTime");
+                    requestContent.Add(new StringContent(model.TaskEndTime), "TaskEndTime");
+                    requestContent.Add(new StringContent(model.Description), "Description");
+
+                    // Add image file if present
+                    if (Image != null && Image.ContentLength > 0)
+                    {
+                        var streamContent = new StreamContent(Image.InputStream);
+                        streamContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+                        {
+                            Name = "Image",
+                            FileName = Path.GetFileName(Image.FileName)
+                        };
+                        streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                        requestContent.Add(streamContent);
+                    }
+
+                    // Send to API
+                    var response = await client.PostAsync("http://localhost/TalentHunt1/api/Main/UpdateTask", requestContent);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string data = await response.Content.ReadAsStringAsync();
-                        var events = JsonConvert.DeserializeObject<List<Event>>(data);
-
-                        // Find the event with the given id
-                        var eventItem = events.FirstOrDefault(e => e.Id == id);
-
-                        if (eventItem != null)
-                        {
-                            return View(eventItem); // Pass event details to view
-                        }
-                        else
-                        {
-                            return HttpNotFound("Event not found."); // Event not found
-                        }
+                        TempData["Message"] = "Task updated successfully!";
+                        return RedirectToAction("ShowTasks", new { eventId = model.EventID });
                     }
                     else
                     {
-                        return HttpNotFound("Error retrieving events.");
+                        ModelState.AddModelError("", "Error: " + await response.Content.ReadAsStringAsync());
+                        return RedirectToAction("ShowTasks", new { eventId = model.EventID }); // fallback to same page even if failed
                     }
                 }
             }
             catch (Exception ex)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
+                ModelState.AddModelError("", "Exception: " + ex.Message);
+                return RedirectToAction("ShowTasks", new { eventId = model.EventID });
             }
         }
+        public ActionResult SubmissionDetails(int submissionId)
+        {
+            try
+            {
+                using (var db = new Talent_HuntEntities3())
+                {
+                    // Step 1: Fetch data including SubmissionTime as string (or nullable DateTime)
+                    var submissionData = (from s in db.Submission
+                                          join u in db.Users on s.UserID equals u.Id
+                                          join t in db.Task on s.TaskID equals t.Id
+                                          join e in db.Event on t.EventID equals e.Id
+                                          where s.Id == submissionId
+                                          select new
+                                          {
+                                              s.Id,
+                                              TaskID = s.TaskID,
+                                              UserID = s.UserID,
+                                              UserName = u.Name,
+                                              SubmissionTimeString = s.SubmissionTime,  // If DateTime? or string, treat as string here
+                                              s.PathofSubmission,
+                                              EventTitle = e.Title,
+                                              Details = t.Description
+                                          }).FirstOrDefault();
+
+                    if (submissionData == null)
+                    {
+                        return HttpNotFound("Submission not found.");
+                    }
+
+                    // Step 2: Parse SubmissionTime outside LINQ to Entities
+                    DateTime submissionTimeParsed;
+                    if (submissionData.SubmissionTimeString == null)
+                    {
+                        submissionTimeParsed = DateTime.MinValue; // or choose another default
+                    }
+                    else
+                    {
+                        // Try parse, fallback to MinValue if invalid
+                        if (!DateTime.TryParse(submissionData.SubmissionTimeString.ToString(), out submissionTimeParsed))
+                        {
+                            submissionTimeParsed = DateTime.MinValue;
+                        }
+                    }
+
+                    // Step 3: Map to ViewModel
+                    var submissionDetail = new SubmissionViewModel
+                    {
+                        Id = submissionData.Id,
+                        TaskID = submissionData.TaskID ?? 0,
+                        UserID = submissionData.UserID ?? 0,
+                        UserName = submissionData.UserName,
+                        SubmissionTime = submissionTimeParsed,
+                        PathofSubmission = submissionData.PathofSubmission,
+                        EventTitle = submissionData.EventTitle,
+                        Details = submissionData.Details
+                    };
+
+                    return View(submissionDetail);
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpStatusCodeResult(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+
+
+
 
         [HttpGet]
         public async Task<ActionResult> CommitteeEventDetails(int id)
@@ -733,57 +1290,57 @@ namespace Talent_Hunt.Controllers
             return View(assignedMembers);
         }
 
-
         [HttpPost]
-        public async Task<ActionResult> UpdateEvent(Event model, HttpPostedFileBase imageFile)
+        public async Task<ActionResult> UpdateEvent(Event model, HttpPostedFileBase file)
         {
             try
             {
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("http://localhost/TalentHunt1/api/Main/UpdateEvent"); // Replace with actual base URL of your API
+                    client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
 
-                    using (var formData = new MultipartFormDataContent())
+                    using (var content = new MultipartFormDataContent())
                     {
-                        var eventJson = JsonConvert.SerializeObject(model);
-                        formData.Add(new StringContent(eventJson, Encoding.UTF8, "application/json"), "submitInfo");
+                        // Serialize event model to JSON
+                        var json = JsonConvert.SerializeObject(model);
+                        content.Add(new StringContent(json, Encoding.UTF8, "application/json"), "submitInfo");
 
-                        if (imageFile != null && imageFile.ContentLength > 0)
+                        // Check if the file is provided
+                        if (file != null && file.ContentLength > 0)
                         {
-                            var streamContent = new StreamContent(imageFile.InputStream);
-                            streamContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+                            var streamContent = new StreamContent(file.InputStream);
+                            streamContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                             {
-                                Name = "\"file\"",
-                                FileName = "\"" + Path.GetFileName(imageFile.FileName) + "\""
+                                Name = "file",
+                                FileName = Path.GetFileName(file.FileName)
                             };
-                            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                            streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
 
-                            formData.Add(streamContent, "file", imageFile.FileName);
+                            content.Add(streamContent, "file", Path.GetFileName(file.FileName));
                         }
 
-                        var response = await client.PostAsync("api/YourControllerName/UpdateEvent", formData); // Replace with actual route
+                        // Call the API
+                        var response = await client.PostAsync("api/main/UpdateEvent", content);
 
                         if (response.IsSuccessStatusCode)
                         {
-                            var responseContent = await response.Content.ReadAsStringAsync();
-                            var updatedEvent = JsonConvert.DeserializeObject<Event>(responseContent);
-                            return RedirectToAction("EventDetails", new { id = updatedEvent.Id });
+                            TempData["Message"] = "Event updated successfully.";
                         }
                         else
                         {
-                            var error = await response.Content.ReadAsStringAsync();
-                            ViewBag.Error = "Error updating event: " + error;
-                            return View(model);
+                            TempData["Message"] = "Failed to update event: " + response.ReasonPhrase;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                ViewBag.Error = "Exception: " + ex.Message;
-                return View(model);
+                TempData["Message"] = "Exception: " + ex.Message;
             }
+
+            return RedirectToAction("DashBoard");
         }
+
 
 
         public async Task<ActionResult> ShowAllCommiteeMembers()
@@ -843,94 +1400,163 @@ namespace Talent_Hunt.Controllers
                 return RedirectToAction("ShowAllCommiteeMembers"); // Or wherever you want to go after deletion
             }
         }
-        [HttpGet]
-        
-        public async Task<ActionResult> NotificationToAssignMember(int eventid)
+
+        [HttpGet] // or HttpPost, depending on how you call it from the UI
+        public async Task<ActionResult> ViewAssignments(int userId)
         {
-            try
-            {
-                var requestPayload = new { EventId = eventid };  // Create the request payload
-                var jsonContent = JsonConvert.SerializeObject(requestPayload);  // Serialize the payload
-                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");  // Set the content type to JSON
+            List<AssignedMemberDetails> assignments = new List<AssignedMemberDetails>();
 
-                // Call the API endpoint with the serialized data
-                var response = await apiClient.PostAsync("http://localhost/TalentHunt1/api/Main/NotificationToAssignMember", httpContent);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseJson = await response.Content.ReadAsStringAsync();  // Read response content
-                    var notifications = JsonConvert.DeserializeObject<List<AssignedNotificationViewModel>>(responseJson);  // Deserialize JSON response
-                    return View(notifications);  // Return the notifications to the view
-                }
-                else
-                {
-                    ViewBag.Error = "Unable to fetch assigned notifications.";
-                    return View(new List<AssignedNotificationViewModel>());
-                }
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Error = "Error: " + ex.Message;
-                return View(new List<AssignedNotificationViewModel>());
-            }
-        }
-        private  HttpClient client3;
-
-
-
-
-        // GET: Accept/Reject View
-        public ActionResult AcceptReject(int id)
-        {
-            var assignedMember = db.AssignedMember.Find(id); // or fetch via API
-            if (assignedMember == null) return HttpNotFound();
-
-            var model = new AssignedMemberViewModel
-            {
-                MemberId = assignedMember.Id,
-                //MemberName = assignedMember,
-                //Image = assignedMember.Image,
-                Status = assignedMember.Status
-            };
-
-            return View(model);
-        }
-
-        [HttpPost]
-        public async Task<ActionResult> Apply(int userId, int eventId)
-        {
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
 
-                var requestData = new
+                var requestBody = new { UserId = userId };
+                var jsonContent = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
+
+                try
                 {
-                    UserId = userId,
-                    EventId = eventId
+                    HttpResponseMessage response = await client.PostAsync("api/Main/NotificationToAssignMember", jsonContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        assignments = JsonConvert.DeserializeObject<List<AssignedMemberDetails>>(content);
+                    }
+                    else
+                    {
+                        ViewBag.Error = "Failed to fetch data. Status Code: " + response.StatusCode;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.Error = "Exception occurred: " + ex.Message;
+                }
+            }
+
+            return View(assignments);
+        }
+
+
+
+
+
+        private HttpClient client3;
+
+
+
+      
+
+
+
+        [HttpGet]
+        public async Task<ActionResult> AcceptReject(int id, string status)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var payload = new
+                {
+                    Id = id,
+                    Status = status
                 };
 
-                var json = JsonConvert.SerializeObject(requestData);
+                var json = JsonConvert.SerializeObject(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync("api/Main/Apply", content);
+                var response = await client.PostAsync("api/Main/RequestAcceptReject", content);
 
-                if (response.IsSuccessStatusCode)
+                // Save message regardless of success/failure
+                TempData["Message"] = response.IsSuccessStatusCode
+                    ? "Status updated successfully!"
+                    : "Error updating status.";
+            }
+
+            // ✅ Always redirect somewhere (NEVER return View)
+            return RedirectToAction("CommitteeDashBoard"); // replace with your actual target view
+        }
+
+
+
+
+
+
+
+        //[HttpPost]
+        //public async Task<ActionResult> Apply(int userId, int eventId)
+        //{
+        //    using (var client = new HttpClient())
+        //    {
+        //        client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+
+        //        var requestData = new
+        //        {
+        //            UserId = userId,
+        //            EventId = eventId
+        //        };
+
+        //        var json = JsonConvert.SerializeObject(requestData);
+        //        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        //        var response = await client.PostAsync("api/Main/Apply", content);
+
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            var resultString = await response.Content.ReadAsStringAsync();
+        //            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
+
+        //            // Use TempData to persist between redirects
+        //            TempData["StudentName"] = result.StudentName;
+        //            TempData["EventTitle"] = result.EventTitle;
+        //            TempData["Status"] = result.Status;
+
+        //            return RedirectToAction("Events");
+        //        }
+        //        else
+        //        {
+        //            TempData["Error"] = "Application failed: " + response.ReasonPhrase;
+        //            return RedirectToAction("Events");
+        //        }
+        //    }
+        //}
+        [HttpGet]
+        public async Task<ActionResult> RegisteredEvents(int UserId)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
                 {
-                    var resultString = await response.Content.ReadAsStringAsync();
-                    dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
+                    // Use the original API endpoint to get event details
+                    //HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/main/RegisteredEvents?eventId={eventId}  UserId={ UserId}");
+                    HttpResponseMessage response = await client.GetAsync($"http://localhost/TalentHunt1/api/main/RegisteredEvents?UserId={UserId}");
 
-                    // Use TempData to persist between redirects
-                    TempData["StudentName"] = result.StudentName;
-                    TempData["EventTitle"] = result.EventTitle;
-                    TempData["Status"] = result.Status;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string data = await response.Content.ReadAsStringAsync();
+                        var events = JsonConvert.DeserializeObject<List<RegisteredEventsDetails>>(data);
 
-                    return RedirectToAction("Events");
+                        // Find the event with the given id
+                        //var eventItem = events.FirstOrDefault(e => e.Id == eventId);
+
+                        if (events != null)
+                        {
+                            return View(events); // Pass event details to view
+                        }
+                        else
+                        {
+                            return HttpNotFound("You are not register in any event"); // Event not found
+                        }
+                    }
+                    else
+                    {
+                        return HttpNotFound("Error retrieving events.");
+                    }
                 }
-                else
-                {
-                    TempData["Error"] = "Application failed: " + response.ReasonPhrase;
-                    return RedirectToAction("Events");
-                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Internal server error: " + ex.Message);
             }
         }
 

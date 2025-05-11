@@ -1,0 +1,86 @@
+﻿@model Talent_Hunt.Models.TaskListViewModel
+@{
+    ViewBag.Title = "Task List";
+    bool isEventToday = Model.EventDate.Date == DateTime.Today;
+    DateTime now = DateTime.Now;
+    int taskNumber = 1;
+}
+
+<div class="container py-4">
+    <h2 class="mb-4 text-primary fw-bold"><i class="fas fa-tasks"></i> Tasks for Event</h2>
+
+    @if (!isEventToday)
+    {
+        <div class="alert alert-info text-center shadow-sm rounded-3">
+            <i class="fas fa-info-circle me-2"></i>
+            Task details can only be viewed on the event date:
+            <strong>@Model.EventDate.ToString("dddd, dd MMMM yyyy")</strong>.
+        </div>
+    }
+
+    @if (!Model.Tasks.Any())
+    {
+        <div class="alert alert-warning text-center shadow-sm rounded-3">
+            <i class="fas fa-exclamation-circle me-2"></i>No tasks available for this event.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var task in Model.Tasks)
+            {
+                bool isTaskActive = DateTime.TryParse(task.TaskStartTime, out var startTime) &&
+                                    DateTime.TryParse(task.TaskEndTime, out var endTime) &&
+                                    now >= startTime && now <= endTime;
+
+                bool isClickable = isEventToday && isTaskActive;
+
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <a href="@(isClickable
+                                ? Url.Action("TaskDetails", "Admin", new { id = task.Id })
+                                : "javascript:void(0);")"
+                       class="text-decoration-none text-dark"
+                       onclick="@(isClickable ? "" : "return false;")"
+                       style="@(isClickable ? "" : "pointer-events: none; opacity: 0.6;")">
+
+                        <div class="card h-100 shadow rounded-4 overflow-hidden hover-shadow">
+                            @*
+                                @if (!string.IsNullOrEmpty(task.Image))
+                                {
+                                    <img src="http://localhost/TalentHunt1/Images/@task.Image"
+                                         class="card-img-top"
+                                         style="height: 200px; object-fit: cover;"
+                                         alt="Task Image" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex justify-content-center align-items-center"
+                                         style="height: 200px; color: #888;">
+                                        No Image Available
+                                    </div>
+                                }
+                            *@
+
+                            <div class="card-body">
+                                <h5 class="card-title mb-2">Task @taskNumber</h5>
+                                <p class="card-text">
+                                    <strong>Start Time:</strong> @task.TaskStartTime <br />
+                                    <strong>End Time:</strong> @task.TaskEndTime
+                                </p>
+
+                                @if (!isClickable)
+                                {
+                                    <div class="text-danger small mt-2">
+                                        Task not available for viewing at this time.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                taskNumber++;
+            }
+        </div>
+    }
+</div>

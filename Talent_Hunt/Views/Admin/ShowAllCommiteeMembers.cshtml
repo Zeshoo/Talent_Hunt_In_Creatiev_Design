@@ -45,9 +45,9 @@
                 <td class="fw-semibold">@member.Name</td>
                 <td>@member.Gender</td>
                 <td>
-                    <a href="@Url.Action("Edit", "Admin", new { id = member.Id })" class="btn btn-sm btn-info me-2">
+                    @*<a href="@Url.Action("Edit", "Admin", new { id = member.Id })" class="btn btn-sm btn-info me-2">
                         <i class="fas fa-edit"></i> Edit
-                    </a>
+                    </a>*@
                     <button class="btn btn-sm btn-danger" onclick="deleteMember(@member.Id)">
                         <i class="fas fa-trash-alt"></i> Delete
                     </button>

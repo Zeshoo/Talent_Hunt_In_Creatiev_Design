@@ -1,0 +1,89 @@
+﻿@model Talent_Hunt.Models.TaskDetailsWithSubmissionsViewModel
+
+@{
+    ViewBag.Title = "View Submissions";
+}
+
+<div class="container mt-5">
+    <div class="card shadow rounded">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Task Details & Submissions</h4>
+            <a href="@Url.Action("TaskDetails", "Admin", new { id = Model.Task?.Id })"
+               class="btn btn-light btn-sm shadow-sm border d-flex align-items-center gap-1"
+               style="transition: all 0.2s ease-in-out;">
+                <i class="bi bi-arrow-left-circle"></i> Back to Task Details
+            </a>
+        </div>
+
+        <div class="card-body">
+            @if (Model.Task != null)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold">Task ID:</label>
+                        <p>@Model.Task.Id</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold">Event ID:</label>
+                        <p>@Model.Task.EventID</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold">Start Time:</label>
+                        <p>@DateTime.Parse(Model.Task.TaskStartTime).ToString("hh:mm tt")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold">End Time:</label>
+                        <p>@DateTime.Parse(Model.Task.TaskEndTime).ToString("hh:mm tt")</p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold">Description:</label>
+                    <p>@Model.Task.Description</p>
+                </div>
+
+                <hr />
+
+                <h5>Submissions</h5>
+
+                if (Model.Submissions != null && Model.Submissions.Any())
+                {
+                    <div class="row g-3">
+                        @foreach (var submission in Model.Submissions)
+                        {
+                            <div class="col-md-3 col-sm-4 col-6 text-center">
+                                <div class="card shadow-sm p-2">
+                                    <a href="@Url.Action("SubmissionDetails", "Admin", new { submissionId = submission.Id })"
+                                       class="text-decoration-none text-dark">
+                                        <img src="http://localhost/TalentHunt1/Images/@submission.PathofSubmission"
+                                             class="card-img-top"
+                                             style="height: 200px; object-fit: cover;"
+                                             alt="Submission Image" />
+                                        <div class="mt-2">
+                                            <strong>@submission.UserName</strong>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        @ViewBag.SubmissionMessage ?? "No submissions available for this task."
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    @ViewBag.Message ?? "Task details not found."
+                </div>
+            }
+        </div>
+    </div>
+</div>

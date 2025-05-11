@@ -1,0 +1,66 @@
+﻿@model Talent_Hunt.Models.Task
+
+@{
+    ViewBag.Title = "Task Details";
+    var userId = Session["UserId"];
+}
+
+<div class="container py-4">
+
+    <h2 class="mb-4 text-primary fw-bold">
+        <i class="fas fa-info-circle"></i> Task Details
+    </h2>
+
+    <div class="card shadow rounded-4 p-4 mb-5">
+        <h4 class="text-primary mb-3">@Model.Description</h4>
+
+        <p class="mb-4">
+            <strong>Event ID:</strong> @Model.EventID <br />
+            <strong>Start Time:</strong> @Model.TaskStartTime <br />
+            <strong>End Time:</strong> @Model.TaskEndTime
+        </p>
+
+        <div class="text-center mb-4">
+            @if (!string.IsNullOrEmpty(Model.Image))
+            {
+                <img src="http://localhost/TalentHunt1/Images/@Model.Image"
+                     class="img-thumbnail rounded"
+                     style="max-height: 300px; object-fit: contain;"
+                     alt="Task Image" />
+            }
+            else
+            {
+                <div class="bg-light text-muted p-5 rounded">
+                    <i class="fas fa-image fa-2x mb-2"></i><br />
+                    No Image Available
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Upload Design Form -->
+    <div class="card shadow rounded-4 p-4">
+        <h5 class="mb-3 text-success fw-semibold">
+            <i class="fas fa-upload"></i> Submit Your Design
+        </h5>
+
+        <form action="@Url.Action("SubmitTask", "Admin", new { taskId = Model.Id })" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="fileInput" class="form-label">Select File</label>
+                <input type="file" name="file" id="fileInput" class="form-control" required />
+            </div>
+
+            <!-- Hidden submission fields -->
+            <input type="hidden" name="submission.TaskID" value="@Model.Id" />
+            <input type="hidden" name="submission.UserID" value=userId /> @* Replace with dynamic User ID *@
+
+            <div class="text-end">
+                <button type="submit"
+                        class="btn btn-success btn-lg rounded-pill px-4 d-inline-flex align-items-center gap-2 shadow-sm">
+                    <i class="fas fa-paper-plane"></i> Submit Design
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>

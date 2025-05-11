@@ -1,0 +1,27 @@
+﻿@model List<Talent_Hunt.Models.AssignedEventViewModel>
+
+<h2>Assigned Events</h2>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <a href="@Url.Action("CommitteeMemberEventDetailsAfterStatusUpdate", "Admin", new { eventId = item.EventID })" style="text-decoration: none; color: inherit;">
+                    <div class="card mb-3">
+                        <img src="@($"http://localhost/TalentHunt1/Images/{item.EventImage ?? "default.png"}")" alt="Event Image" class="event-image" />
+                        <div class="card-body">
+                            <h5 class="card-title">@item.EventTitle</h5>
+                            <p class="card-text"><strong>Status:</strong> @item.Status</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No assigned events found.</p>
+}

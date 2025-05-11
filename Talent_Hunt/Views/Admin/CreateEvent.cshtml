@@ -23,10 +23,7 @@
                     <input type="text" name="eventTitle" class="form-control" required />
                 </div>
 
-                <div class="form-group mt-3">
-                    <label class="fw-bold">Description:</label>
-                    <textarea name="description" class="form-control" required></textarea>
-                </div>
+              
 
                 <div class="form-group mt-3">
                     <label class="fw-bold">Registration Start Date:</label>
@@ -59,32 +56,20 @@
                     <label class="fw-bold">Upload Event Image:</label>
                     <input type="file" name="eventImage" class="form-control" />
                 </div>
+                <div class="form-group mt-3">
+                    <label class="fw-bold">Description:</label>
+                    <textarea name="description" class="form-control" required></textarea>
+                </div>
             </div>
         </div>
 
-        <div class="form-group mt-3">
-            <label class="fw-bold">Rules:</label><br />
-            <div class="row">
-                <div class="col-md-6">
-                    <input type="checkbox" name="rules[]" value="1st Semester" /> 1st Semester<br />
-                    <input type="checkbox" name="rules[]" value="2nd Semester" /> 2nd Semester<br />
-                    <input type="checkbox" name="rules[]" value="3rd Semester" /> 3rd Semester<br />
-                    <input type="checkbox" name="rules[]" value="4th Semester" /> 4th Semester<br />
-                </div>
-                <div class="col-md-6">
-                    <input type="checkbox" name="rules[]" value="5th Semester" /> 5th Semester<br />
-                    <input type="checkbox" name="rules[]" value="6th Semester" /> 6th Semester<br />
-                    <input type="checkbox" name="rules[]" value="7th Semester" /> 7th Semester<br />
-                    <input type="checkbox" name="rules[]" value="8th Semester" /> 8th Semester<br />
-                </div>
-            </div>
-        </div>
+      
 
         <div class="mt-4 text-center">
             <button type="submit" class="btn btn-success btn-lg px-5">Create Event</button>
             <a href="@Url.Action("DashBoard", "Admin")" class="btn btn-danger btn-lg px-4">Back</a>
-            <a href="@Url.Action("CreateTask", "Admin")" class="btn btn-primary btn-lg px-4">Create Task</a>
-            <a href="@Url.Action("AssignMember", "Admin")" class="btn btn-primary btn-lg px-4">Assign Member</a>
+            @*<a href="@Url.Action("CreateTask", "Admin")" class="btn btn-primary btn-lg px-4">Create Task</a>
+            <a href="@Url.Action("AssignMember", "Admin")" class="btn btn-primary btn-lg px-4">Assign Member</a>*@
         </div>
     </form>
 </div>

@@ -1,0 +1,72 @@
+﻿@model Talent_Hunt.Models.TaskDto
+
+@{
+    ViewBag.Title = "Task Details";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg rounded">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Task Details</h4>
+            <a href="@Url.Action("ViewSubmissions", "Admin", new { taskId = Model.Id })"
+               class="btn btn-light btn-sm shadow-sm border d-flex align-items-center gap-1"
+               style="transition: all 0.2s ease-in-out;">
+                <i class="bi bi-eye-fill"></i> View Submissions
+            </a>
+        </div>
+
+        <div class="card-body">
+            @if (Model != null)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold">Task ID:</label>
+                        <p>@Model.Id</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold">Event ID:</label>
+                        <p>@Model.EventID</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold">Start Time:</label>
+                        <p>@DateTime.Parse(Model.TaskStartTime).ToString("hh:mm tt")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold">End Time:</label>
+                        <p>@DateTime.Parse(Model.TaskEndTime).ToString("hh:mm tt")</p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold">Description:</label>
+                    <p>@Model.Description</p>
+                </div>
+
+                <div class="card h-100 shadow rounded-4 overflow-hidden task-card" style="transition: transform 0.2s;">
+                    @if (!string.IsNullOrEmpty(Model.Image))
+                    {
+                        <img src="http://localhost/TalentHunt1/Images/@Model.Image"
+                             class="card-img-top"
+                             style="height: 200px; object-fit: cover;"
+                             alt="Task Image" />
+                    }
+                    else
+                    {
+                        <div class="bg-light d-flex justify-content-center align-items-center"
+                             style="height: 200px; color: #888;">
+                            No Image Available
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">Task details not found.</div>
+            }
+        </div>
+    </div>
+</div>

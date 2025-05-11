@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Talent_Hunt.Models.RegisteredEventsDetails>
+
+@{
+    ViewBag.Title = "Registered Events";
+}
+
+<h2 class="mb-4">Your Registered Events</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var eventItem in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0" style="cursor: pointer;"
+                 onclick="handleEventClick('@eventItem.Status', @eventItem.EventId)">
+                <img src="@($"http://localhost/TalentHunt1/Images/{(eventItem.Image ?? "default-image.png")}")"
+                     class="card-img-top"
+                     style="height: 220px; object-fit: cover;"
+                     alt="Event Image">
+                <div class="card-body">
+                    <h5 class="card-title">@eventItem.Name</h5>
+                    <p class="card-text"><strong>Status:</strong> @eventItem.Status</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function handleEventClick(status, eventId) {
+            if (status.toLowerCase() === "accepted") {
+                window.location.href = '/Admin/StudentEventDetailsafterstatusupdate/' + eventId;
+            } else {
+                alert("You are not allowed to participate in this event yet.");
+            }
+        }
+    </script>
+}

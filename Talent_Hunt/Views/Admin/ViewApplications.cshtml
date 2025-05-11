@@ -1,0 +1,75 @@
+﻿@model List<Talent_Hunt.Models.ApplicationViewModel>
+
+@{
+    ViewBag.Title = "Applications";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Applications</h3>
+        </div>
+
+        <div class="card-body">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger shadow-sm">@TempData["Error"]</div>
+            }
+            else if (Model != null && Model.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered text-center align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Event Title</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var app in Model)
+                            {
+                                <tr>
+                                    <td>@app.StudentName</td>
+                                    <td>@app.EventTitle</td>
+                                    <td>
+                                        <span class="badge
+                                            @(app.Status == "Accepted" ? "bg-success" :
+                                              app.Status == "Rejected" ? "bg-danger" : "bg-secondary")">
+                                            @app.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <form method="post" action="@Url.Action("UpdateApplicationStatus", "Admin")" class="d-inline">
+                                                <input type="hidden" name="applyId" value="@app.ApplicationId" />
+                                                <input type="hidden" name="newStatus" value="Accepted" />
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-circle-fill"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form method="post" action="@Url.Action("UpdateApplicationStatus", "Admin")" class="d-inline">
+                                                <input type="hidden" name="applyId" value="@app.ApplicationId" />
+                                                <input type="hidden" name="newStatus" value="Rejected" />
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-x-circle-fill"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle-fill"></i> No applications found for this event.
+                </div>
+            }
+        </div>
+    </div>
+</div>

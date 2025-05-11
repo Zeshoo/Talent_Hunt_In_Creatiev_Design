@@ -137,12 +137,15 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ApplicationViewModel.cs" />
     <Compile Include="Models\Apply.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\AssignedEventViewModel.cs" />
     <Compile Include="Models\AssignedMember.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\AssignedMemberDetails.cs" />
     <Compile Include="Models\AssignedMemberViewModel.cs" />
     <Compile Include="Models\AssignedNotificationViewModel.cs" />
     <Compile Include="Models\CommitteeMember.cs">
@@ -169,14 +172,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Model1.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Models\RegisteredEventsDetails.cs" />
     <Compile Include="Models\Submission.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\SubmissionViewModel.cs" />
     <Compile Include="Models\Task.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\TaskDetailsWithSubmissionsViewModel.cs" />
     <Compile Include="Models\TaskDto.cs" />
     <Compile Include="Models\TaskViewModel.cs" />
+    <Compile Include="Models\TaskListViewModel.cs" />
     <Compile Include="Models\userAddCommittee.cs" />
     <Compile Include="Models\Users.cs">
       <DependentUpon>Model1.tt</DependentUpon>
@@ -259,7 +266,6 @@
     <Content Include="Views\updatedeletesearch\Index.cshtml" />
     <Content Include="Views\updatedelete\Index.cshtml" />
     <Content Include="Views\EventCreation\addrules.cshtml" />
-    <Content Include="Views\Admin\DashBoard.cshtml" />
     <Content Include="Views\Admin\CreateEvent.cshtml" />
     <Content Include="Views\Student\Index.cshtml" />
     <Content Include="Views\Admin\AddMember.cshtml" />
@@ -284,8 +290,22 @@
     <Content Include="Views\Admin\Signup.cshtml" />
     <Content Include="Views\Admin\Login.cshtml" />
     <Content Include="Views\Admin\NotificationToAssignMember.cshtml" />
-    <Content Include="Views\Admin\AcceptReject.cshtml" />
     <Content Include="Views\Admin\Apply.cshtml" />
+    <Content Include="Views\Admin\ViewAssignments.cshtml" />
+    <Content Include="Views\Admin\ViewApplications.cshtml" />
+    <Content Include="Views\Admin\DashBoard.cshtml" />
+    <Content Include="Views\Admin\StudentEventDetails.cshtml" />
+    <Content Include="Views\Admin\RegisteredEvents.cshtml" />
+    <Content Include="Views\Admin\StudentEventDetailsafterstatusupdate.cshtml" />
+    <Content Include="Views\Admin\ShowTasksForStudents.cshtml" />
+    <Content Include="Views\Admin\SubmitTask.cshtml" />
+    <Content Include="Views\Admin\AssignedEvents.cshtml" />
+    <Content Include="Views\Admin\CommitteeMemberEventDetailsAfterStatusUpdate.cshtml" />
+    <Content Include="Views\Admin\ShowTasksForCommitteeMember.cshtml" />
+    <Content Include="Views\Admin\TaskDetails.cshtml" />
+    <Content Include="Views\Admin\TaskDetailsForCommitteeMember.cshtml" />
+    <Content Include="Views\Admin\ViewSubmissions.cshtml" />
+    <Content Include="Views\Admin\SubmissionDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
