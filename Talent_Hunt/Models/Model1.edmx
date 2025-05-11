@@ -5,14 +5,16 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
       <Schema Namespace="Talent_HuntModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'Talent_Hunt.dbo.Apply' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="Apply">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="UserID" Type="int" />
-          <Property Name="EventID" Type="int" />
-          <Property Name="Status" Type="varchar" MaxLength="50" />
+          <Property Name="UserId" Type="int" />
+          <Property Name="EventId" Type="int" />
+          <Property Name="Status" Type="varchar" MaxLength="20" />
         </EntityType>
         <EntityType Name="AssignedMember">
           <Key>
@@ -88,7 +90,6 @@
           <Property Name="Role" Type="varchar" MaxLength="20" />
         </EntityType>
         <EntityContainer Name="Talent_HuntModelStoreContainer">
-          <EntitySet Name="Apply" EntityType="Self.Apply" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="AssignedMember" EntityType="Self.AssignedMember" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CommitteeMember" EntityType="Self.CommitteeMember" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Event" EntityType="Self.Event" Schema="dbo" store:Type="Tables" />
@@ -96,21 +97,20 @@
           <EntitySet Name="Submission" EntityType="Self.Submission" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Task" EntityType="Self.Task" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Apply" EntityType="Self.Apply" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Apply].[Id] AS [Id], 
+    [Apply].[UserId] AS [UserId], 
+    [Apply].[EventId] AS [EventId], 
+    [Apply].[Status] AS [Status]
+    FROM [dbo].[Apply] AS [Apply]</DefiningQuery>
+          </EntitySet>
         </EntityContainer>
       </Schema>
     </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="Talent_HuntModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="Apply">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="UserID" Type="Int32" />
-          <Property Name="EventID" Type="Int32" />
-          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityType Name="AssignedMember">
           <Key>
             <PropertyRef Name="Id" />
@@ -184,8 +184,16 @@
           <Property Name="Password" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="Role" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
         </EntityType>
-        <EntityContainer Name="Talent_HuntEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="Apply" EntityType="Self.Apply" />
+        <EntityType Name="Apply">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserId" Type="Int32" />
+          <Property Name="EventId" Type="Int32" />
+          <Property Name="Status" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityContainer Name="Talent_HuntEntities1" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="AssignedMember" EntityType="Self.AssignedMember" />
           <EntitySet Name="CommitteeMember" EntityType="Self.CommitteeMember" />
           <EntitySet Name="Event" EntityType="Self.Event" />
@@ -193,23 +201,14 @@
           <EntitySet Name="Submission" EntityType="Self.Submission" />
           <EntitySet Name="Task" EntityType="Self.Task" />
           <EntitySet Name="Users" EntityType="Self.Users" />
+          <EntitySet Name="Apply" EntityType="Self.Apply" />
         </EntityContainer>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="Talent_HuntModelStoreContainer" CdmEntityContainer="Talent_HuntEntities">
-          <EntitySetMapping Name="Apply">
-            <EntityTypeMapping TypeName="Talent_HuntModel.Apply">
-              <MappingFragment StoreEntitySet="Apply">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="UserID" ColumnName="UserID" />
-                <ScalarProperty Name="EventID" ColumnName="EventID" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
+        <EntityContainerMapping StorageEntityContainer="Talent_HuntModelStoreContainer" CdmEntityContainer="Talent_HuntEntities1">
           <EntitySetMapping Name="AssignedMember">
             <EntityTypeMapping TypeName="Talent_HuntModel.AssignedMember">
               <MappingFragment StoreEntitySet="AssignedMember">
@@ -287,6 +286,16 @@
                 <ScalarProperty Name="Email" ColumnName="Email" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Role" ColumnName="Role" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Apply">
+            <EntityTypeMapping TypeName="Talent_HuntModel.Apply">
+              <MappingFragment StoreEntitySet="Apply">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="EventId" ColumnName="EventId" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

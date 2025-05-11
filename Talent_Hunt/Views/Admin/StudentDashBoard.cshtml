@@ -2,6 +2,18 @@
 
 @{
     ViewBag.Title = "Events";
+    var userId = Session["UserId"];
+    var userName = Session["UserName"];
+}
+
+@if (userId != null)
+{
+    <h3>Welcome, your User ID is: @userId</h3>
+    <h3>Welcome, your Name is: @userName</h3>
+}
+else
+{
+    <h3>User ID not found in session.</h3>
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -68,7 +80,8 @@
         padding: 8px 16px;
         border-radius: 5px;
         cursor: pointer;
-        display: none; /* Hidden by default */
+        display: none;
+        margin-top: 10px;
     }
 
         .apply-btn:hover {
@@ -76,7 +89,7 @@
         }
 
     .event-item.selected .apply-btn {
-        display: block; /* Show button when event is selected */
+        display: block;
     }
 </style>
 
@@ -118,7 +131,6 @@
                                 <div><span class="event-attribute"><i class="fas fa-calendar-day me-1"></i>Event Date:</span> @eventItem.EventDate</div>
                             </div>
                         </div>
-                        <!-- Apply Button -->
                         <button class="apply-btn" onclick="applyForEvent(@eventItem.Id)">Apply</button>
                     </div>
                 }
@@ -129,8 +141,31 @@
 
 <script>
     function applyForEvent(eventId) {
-        // Implement the functionality to apply for the event (e.g., send a request to the server)
-        alert("Applied for event with ID: " + eventId);
+        const userId = '@Session["UserId"]';
+
+        if (!userId || userId === "") {
+            alert("User is not logged in.");
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/Admin/Apply';
+
+        const userIdInput = document.createElement('input');
+        userIdInput.type = 'hidden';
+        userIdInput.name = 'userId';
+        userIdInput.value = userId;
+
+        const eventIdInput = document.createElement('input');
+        eventIdInput.type = 'hidden';
+        eventIdInput.name = 'eventId';
+        eventIdInput.value = eventId;
+
+        form.appendChild(userIdInput);
+        form.appendChild(eventIdInput);
+        document.body.appendChild(form);
+        form.submit();
     }
 
     $(document).ready(function () {
@@ -139,14 +174,9 @@
             filterEvents(value);
         });
 
-        // Event card click handling
         $(".event-card").on("click", function () {
             const eventItem = $(this).closest(".event-item");
-
-            // Toggle the "selected" class to show the "Apply" button
             eventItem.toggleClass("selected");
-
-            // If the event card is selected, show the apply button, otherwise hide it
             const applyButton = eventItem.find(".apply-btn");
             applyButton.toggleClass("d-block", eventItem.hasClass("selected"));
         });

@@ -144,6 +144,7 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\AssignedMemberViewModel.cs" />
+    <Compile Include="Models\AssignedNotificationViewModel.cs" />
     <Compile Include="Models\CommitteeMember.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -282,6 +283,9 @@
     <Content Include="Views\Admin\StudentDashBoard.cshtml" />
     <Content Include="Views\Admin\Signup.cshtml" />
     <Content Include="Views\Admin\Login.cshtml" />
+    <Content Include="Views\Admin\NotificationToAssignMember.cshtml" />
+    <Content Include="Views\Admin\AcceptReject.cshtml" />
+    <Content Include="Views\Admin\Apply.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

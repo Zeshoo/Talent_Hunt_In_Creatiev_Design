@@ -13,10 +13,10 @@ namespace Talent_Hunt.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class Talent_HuntEntities : DbContext
+    public partial class Talent_HuntEntities1 : DbContext
     {
-        public Talent_HuntEntities()
-            : base("name=Talent_HuntEntities")
+        public Talent_HuntEntities1()
+            : base("name=Talent_HuntEntities1")
         {
         }
     
@@ -25,7 +25,6 @@ namespace Talent_Hunt.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Apply> Apply { get; set; }
         public virtual DbSet<AssignedMember> AssignedMember { get; set; }
         public virtual DbSet<CommitteeMember> CommitteeMember { get; set; }
         public virtual DbSet<Event> Event { get; set; }
@@ -33,5 +32,6 @@ namespace Talent_Hunt.Models
         public virtual DbSet<Submission> Submission { get; set; }
         public virtual DbSet<Task> Task { get; set; }
         public virtual DbSet<Users> Users { get; set; }
+        public virtual DbSet<Apply> Apply { get; set; }
     }
 }

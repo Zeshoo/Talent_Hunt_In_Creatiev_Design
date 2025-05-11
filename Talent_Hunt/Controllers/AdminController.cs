@@ -19,10 +19,10 @@ namespace Talent_Hunt.Controllers
 {
     public class AdminController : Controller
     {
-        private Talent_HuntEntities db = new Talent_HuntEntities();
+        private Talent_HuntEntities1 db = new Talent_HuntEntities1();
         private readonly string SignUpApi = "http://localhost/TalentHunt1/api/Main/Signup";
         private readonly string getUserApi = "http://localhost/TalentHunt1/api/Main/getUser";
-
+        private static readonly HttpClient apiClient = new HttpClient();
         private readonly string apiUrl = "http://localhost/TalentHunt1/api/Main/ShowAllEvents";
         //private readonly string ShowTask = "http://localhost/TalentHunt1/api/Main/ShowTask";
         private readonly string createEventApiUrl = "http://localhost/TalentHunt1/api/Main/CreateEvent";
@@ -78,26 +78,28 @@ namespace Talent_Hunt.Controllers
         [HttpPost]
         public async Task<ActionResult> Login(string email, string password)
         {
-            List<User> users = new List<User>();
+            List<Users> users = new List<Users>();  // Use the Users model for deserialization
 
             using (HttpClient client = new HttpClient())
             {
-                HttpResponseMessage response = await client.GetAsync(getUserApi);
+                HttpResponseMessage response = await client.GetAsync(getUserApi);  // Use your actual API URL
 
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonData = await response.Content.ReadAsStringAsync();
-                    users = JsonConvert.DeserializeObject<List<User>>(jsonData);
+                    users = JsonConvert.DeserializeObject<List<Users>>(jsonData);  // Deserialize to Users model
                 }
             }
 
             // Check if user exists in the list
-            User loggedInUser = users.Find(u => u.Email == email && u.Password == password);
+            Users loggedInUser = users.Find(u => u.Email == email && u.Password == password);  // Use Users model
 
             if (loggedInUser != null)
             {
                 // Store user session
-                Session["UserID"] = loggedInUser.UserID;
+                Session["UserId"] = loggedInUser.Id; // Store logged-in user's Id
+                int userId = Convert.ToInt32(Session["UserId"]);
+
                 Session["UserRole"] = loggedInUser.Role;
                 Session["UserName"] = loggedInUser.Name;
 
@@ -123,6 +125,7 @@ namespace Talent_Hunt.Controllers
             ViewBag.Error = "Invalid email or password.";
             return View();
         }
+
         [HttpGet]
         public async Task<ActionResult> DashBoard()
         {
@@ -141,6 +144,12 @@ namespace Talent_Hunt.Controllers
         [HttpGet]
         public async Task<ActionResult> CommitteeDashBoard()
         {
+            if (Session["UserID"] != null)
+            {
+                int userId = Convert.ToInt32(Session["UserID"]);
+                // Use userId here
+            }
+
             List<Event> events = new List<Event>();
             using (HttpClient client = new HttpClient())
             {
@@ -157,6 +166,13 @@ namespace Talent_Hunt.Controllers
         public async Task<ActionResult> StudentDashBoard()
         {
             List<Event> events = new List<Event>();
+            //List<Users> users = new List<Users>();
+
+          
+            string userRole = Session["UserRole"] as string;
+            string userName = Session["UserName"] as string;
+
+            int userId = Convert.ToInt32(Session["UserId"]);
             using (HttpClient client = new HttpClient())
             {
                 HttpResponseMessage response = await client.GetAsync(apiUrl);
@@ -166,7 +182,7 @@ namespace Talent_Hunt.Controllers
                     events = JsonConvert.DeserializeObject<List<Event>>(data);
                 }
             }
-            return View(events);
+            return RedirectToAction("StudentDashBoard");
         }
         [HttpGet]
         public async Task<ActionResult> ShowTasks(int eventid)
@@ -827,5 +843,98 @@ namespace Talent_Hunt.Controllers
                 return RedirectToAction("ShowAllCommiteeMembers"); // Or wherever you want to go after deletion
             }
         }
+        [HttpGet]
+        
+        public async Task<ActionResult> NotificationToAssignMember(int eventid)
+        {
+            try
+            {
+                var requestPayload = new { EventId = eventid };  // Create the request payload
+                var jsonContent = JsonConvert.SerializeObject(requestPayload);  // Serialize the payload
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");  // Set the content type to JSON
+
+                // Call the API endpoint with the serialized data
+                var response = await apiClient.PostAsync("http://localhost/TalentHunt1/api/Main/NotificationToAssignMember", httpContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseJson = await response.Content.ReadAsStringAsync();  // Read response content
+                    var notifications = JsonConvert.DeserializeObject<List<AssignedNotificationViewModel>>(responseJson);  // Deserialize JSON response
+                    return View(notifications);  // Return the notifications to the view
+                }
+                else
+                {
+                    ViewBag.Error = "Unable to fetch assigned notifications.";
+                    return View(new List<AssignedNotificationViewModel>());
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Error: " + ex.Message;
+                return View(new List<AssignedNotificationViewModel>());
+            }
+        }
+        private  HttpClient client3;
+
+
+
+
+        // GET: Accept/Reject View
+        public ActionResult AcceptReject(int id)
+        {
+            var assignedMember = db.AssignedMember.Find(id); // or fetch via API
+            if (assignedMember == null) return HttpNotFound();
+
+            var model = new AssignedMemberViewModel
+            {
+                MemberId = assignedMember.Id,
+                //MemberName = assignedMember,
+                //Image = assignedMember.Image,
+                Status = assignedMember.Status
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Apply(int userId, int eventId)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+
+                var requestData = new
+                {
+                    UserId = userId,
+                    EventId = eventId
+                };
+
+                var json = JsonConvert.SerializeObject(requestData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync("api/Main/Apply", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultString = await response.Content.ReadAsStringAsync();
+                    dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
+
+                    // Use TempData to persist between redirects
+                    TempData["StudentName"] = result.StudentName;
+                    TempData["EventTitle"] = result.EventTitle;
+                    TempData["Status"] = result.Status;
+
+                    return RedirectToAction("Events");
+                }
+                else
+                {
+                    TempData["Error"] = "Application failed: " + response.ReasonPhrase;
+                    return RedirectToAction("Events");
+                }
+            }
+        }
+
     }
+
 }
+

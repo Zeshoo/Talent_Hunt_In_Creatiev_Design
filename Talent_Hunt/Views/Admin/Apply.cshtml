@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "Application Result";
+}
+
+<h2>Application Result</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> @ViewBag.Error
+    </div>
+}
+else
+{
+    <div class="alert alert-success" role="alert">
+        <strong>Application submitted successfully!</strong>
+    </div>
+
+    <table class="table table-bordered mt-3">
+        <tr>
+            <th>Student Name</th>
+            <td>@ViewBag.StudentName</td>
+        </tr>
+        <tr>
+            <th>Event Title</th>
+            <td>@ViewBag.EventTitle</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>@ViewBag.Status</td>
+        </tr>
+    </table>
+}
+
+<a href="@Url.Action("Admin", "StudentDashBoard")" class="btn btn-secondary mt-3">Back to Events</a>

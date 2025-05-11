@@ -44,9 +44,9 @@
                    class="dropdown-item mb-2 rounded-3 custom-button">
                     <i class="fas fa-user-plus me-2 text-warning"></i>Assign Member
                 </a>
-                <a href="@Url.Action("EventReport", "Admin", new { eventId = Model.Id })"
+                <a href="@Url.Action("NotificationToAssignMember", "Admin", new { eventId = Model.Id })"
                    class="dropdown-item mb-2 rounded-3 custom-button">
-                    <i class="fas fa-chart-line me-2 text-info"></i>View Report
+                    <i class="fas fa-chart-line me-2 text-info"></i>Send Notification to Committee Members
                 </a>
                 <a href="@Url.Action("ShowAssignedMembers", "Admin", new { eventId = Model.Id })"
                    class="dropdown-item mb-2 rounded-3 custom-button">

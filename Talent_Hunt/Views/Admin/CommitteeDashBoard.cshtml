@@ -108,13 +108,17 @@
         width: 100%;
     }
 </style>
+@{
+    var userId = Session["UserID"];
+}
 
 <!-- Sidebar Menu -->
 <div class="sidebar" id="sidebarMenu">
     <h5 class="text-dark mb-4"><i class="fas fa-bars me-2"></i>Menu</h5>
-    <a class="btn btn-outline-info w-100" href="@Url.Action("Events", "Admin")">
-        <i class="fas fa-eye me-1"></i> View Events
+    <a class="btn btn-outline-info w-100" href="@Url.Action("AcceptReject", "Admin", new { id = userId})">
+        <i class="fas fa-eye me-1"></i> View Assignment
     </a>
+
 </div>
 
 <div class="container-fluid mt-4">

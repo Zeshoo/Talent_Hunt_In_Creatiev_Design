@@ -15,8 +15,8 @@ namespace Talent_Hunt.Models
     public partial class Apply
     {
         public int Id { get; set; }
-        public Nullable<int> UserID { get; set; }
-        public Nullable<int> EventID { get; set; }
+        public Nullable<int> UserId { get; set; }
+        public Nullable<int> EventId { get; set; }
         public string Status { get; set; }
     }
 }
