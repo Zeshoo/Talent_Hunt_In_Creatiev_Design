@@ -8,56 +8,32 @@
 <h2 class="text-primary mt-4 text-center">Submission Details</h2>
 
 <div class="card shadow p-4 mt-3" style="max-width: 700px; margin: auto;">
-    <div class="row mb-3">
-        <label class="col-sm-3 fw-bold">User Name:</label>
-        <div class="col-sm-9">@Model.UserName</div>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+    }
+
+    <!-- Submission Image -->
+    <div class="text-center mb-4">
+        <img src="http://localhost/TalentHunt1/Images/@Model.PathofSubmission"
+             class="img-fluid rounded shadow-sm"
+             style="max-height: 300px; object-fit: contain;"
+             alt="Submission Image" />
     </div>
 
-    <div class="row mb-3">
-        <label class="col-sm-3 fw-bold">Event Title:</label>
-        <div class="col-sm-9">@Model.EventTitle</div>
-    </div>
-
-    <div class="row mb-3">
-        <label class="col-sm-3 fw-bold">Submission Time:</label>
-        <div class="col-sm-9">@Model.SubmissionTime.ToString("f")</div>
-    </div>
-
-    <div class="row mb-3">
-        <label class="col-sm-3 fw-bold">Task Description:</label>
-        <div class="col-sm-9">@Model.Details</div>
-    </div>
-
-    <div class="row mb-3">
-        <label class="col-sm-3 fw-bold">Submission File:</label>
+    <!-- Display submission details -->
+    <div class="mb-3 row">
+        <label class="col-sm-3 fw-bold">Submitted By:</label>
         <div class="col-sm-9">
-            @if (!string.IsNullOrEmpty(Model.PathofSubmission))
-            {
-                if (Model.PathofSubmission.EndsWith(".jpg") || Model.PathofSubmission.EndsWith(".png") || Model.PathofSubmission.EndsWith(".jpeg"))
-                {
-                    <img src="http://localhost/TalentHunt1/Images/@Model.PathofSubmission"
-                         class="img-fluid rounded border"
-                         style="max-height: 300px; object-fit: contain;"
-                         alt="Submission Image" />
-                }
-                else
-                {
-                    <a class="btn btn-outline-primary" href="@Url.Content(Model.PathofSubmission)" target="_blank">View Submitted File</a>
-                }
-            }
-            else
-            {
-                <span class="text-danger">No submission file available.</span>
-            }
+            <p class="form-control-plaintext">@Model.UserName</p>
         </div>
     </div>
 
-    <hr />
-
+    <!-- Marks Dropdown -->
     <div class="row mb-3">
-        <label class="col-sm-3 fw-bold">Assign Marks:</label>
+        <label class="col-sm-3 fw-bold" for="Marks">Assign Marks:</label>
         <div class="col-sm-9">
-            <select class="form-select w-50 d-inline-block" id="marksDropdown" name="marksDropdown">
+            <select id="Marks" class="form-select w-50 d-inline-block">
                 @for (int i = 0; i <= 10; i++)
                 {
                     <option value="@i">@i</option>
@@ -66,17 +42,49 @@
         </div>
     </div>
 
+    <!-- Hidden CommitteeMemberId -->
+    <input type="hidden" id="CommitteeMemberId" value="@ViewBag.CommitteeMemberId" />
+
+    <!-- Submit Button -->
     <div class="text-center mt-4">
-        <button class="btn btn-success px-4" onclick="submitMarks()">Submit Marks</button>
+        <button type="button" class="btn btn-success px-4" onclick="submitMarks()">Submit Marks</button>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        function submitMarks() {
-            const selectedMark = document.getElementById("marksDropdown").value;
-            alert("Marks Submitted: " + selectedMark);
-            // You can integrate AJAX here to save marks
+<script>
+    function submitMarks() {
+        var marks = document.getElementById("Marks").value;
+        var submissionId = "@Model.Id";
+        var committeeMemberId = document.getElementById("CommitteeMemberId").value;
+
+        if (!committeeMemberId || committeeMemberId === "0") {
+            alert("Committee Member ID is missing. Please log in again.");
+            return;
         }
-    </script>
-}
+
+        // Get anti-forgery token
+        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        // Create FormData
+        var formData = new FormData();
+        formData.append("SubmissionId", submissionId);
+        formData.append("CommitteeMemberId", committeeMemberId);
+        formData.append("Marks", marks);
+        formData.append("__RequestVerificationToken", token);
+
+        fetch('/Admin/Marks', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                alert("Failed to submit marks.");
+            }
+        })
+        .catch(error => {
+            alert("Error: " + error);
+        });
+    }
+</script>

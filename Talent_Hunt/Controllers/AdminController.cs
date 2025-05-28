@@ -953,9 +953,30 @@ namespace Talent_Hunt.Controllers
         {
             try
             {
+                int userId = 0;
+                int committeeMemberId = 0;
+
+                // Retrieve logged-in UserId from Session
+                if (Session["UserId"] != null)
+                {
+                    userId = Convert.ToInt32(Session["UserId"]);
+                }
+
                 using (var db = new Talent_HuntEntities3())
                 {
-                    // Step 1: Fetch data including SubmissionTime as string (or nullable DateTime)
+                    // 👇 Look up CommitteeMemberId from Users table
+                    var committeeMember = db.CommitteeMember.FirstOrDefault(cm => cm.UserID == userId);
+                    if (committeeMember != null)
+                    {
+                        committeeMemberId = committeeMember.Id;
+                        ViewBag.CommitteeMemberId = committeeMemberId;
+                    }
+                    else
+                    {
+                        ViewBag.CommitteeMemberId = 0; // Or handle as unauthorized
+                    }
+
+                    // Fetch submission data
                     var submissionData = (from s in db.Submission
                                           join u in db.Users on s.UserID equals u.Id
                                           join t in db.Task on s.TaskID equals t.Id
@@ -967,7 +988,7 @@ namespace Talent_Hunt.Controllers
                                               TaskID = s.TaskID,
                                               UserID = s.UserID,
                                               UserName = u.Name,
-                                              SubmissionTimeString = s.SubmissionTime,  // If DateTime? or string, treat as string here
+                                              SubmissionTimeString = s.SubmissionTime,
                                               s.PathofSubmission,
                                               EventTitle = e.Title,
                                               Details = t.Description
@@ -978,22 +999,13 @@ namespace Talent_Hunt.Controllers
                         return HttpNotFound("Submission not found.");
                     }
 
-                    // Step 2: Parse SubmissionTime outside LINQ to Entities
+                    // Parse submission time
                     DateTime submissionTimeParsed;
-                    if (submissionData.SubmissionTimeString == null)
+                    if (!DateTime.TryParse(submissionData.SubmissionTimeString?.ToString(), out submissionTimeParsed))
                     {
-                        submissionTimeParsed = DateTime.MinValue; // or choose another default
-                    }
-                    else
-                    {
-                        // Try parse, fallback to MinValue if invalid
-                        if (!DateTime.TryParse(submissionData.SubmissionTimeString.ToString(), out submissionTimeParsed))
-                        {
-                            submissionTimeParsed = DateTime.MinValue;
-                        }
+                        submissionTimeParsed = DateTime.MinValue;
                     }
 
-                    // Step 3: Map to ViewModel
                     var submissionDetail = new SubmissionViewModel
                     {
                         Id = submissionData.Id,
@@ -1014,6 +1026,45 @@ namespace Talent_Hunt.Controllers
                 return new HttpStatusCodeResult(500, "Internal Server Error: " + ex.Message);
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Marks(int SubmissionId, int CommitteeMemberId, int Marks)
+        {
+            var userIdObj = Session["UserId"];
+            if (userIdObj == null)
+                return new HttpStatusCodeResult(401, "User not logged in");
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+
+                    var url = $"api/Main/AddMarks?SubmissionID={SubmissionId}&CommitteeMemberID={CommitteeMemberId}&Marks={Marks}";
+
+                    var response = await client.PostAsync(url, null);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["Success"] = "Marks saved successfully!";
+                        return Redirect($"~/Admin/SubmissionDetails?submissionId={SubmissionId}");
+                    }
+                    else
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        TempData["Error"] = "API error: " + error;
+                        return Redirect($"~/Admin/SubmissionDetails?submissionId={SubmissionId}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Exception: " + ex.Message;
+                return Redirect($"~/Admin/SubmissionDetails?submissionId={SubmissionId}");
+            }
+        }
+
 
 
 
