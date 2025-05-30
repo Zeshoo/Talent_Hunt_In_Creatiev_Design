@@ -22,7 +22,7 @@ namespace Talent_Hunt.Models
         public int MarksId { get; set; }               // Corresponds to Marks.Id
         public int SubmissionID { get; set; }          // Corresponds to Marks.SubmissionID (can be same as Id or different)
         public int CommitteeMemberID { get; set; }     // Marks.CommitteeMemberID
-        public int Marks { get; set; }                  // Marks.Marks (or Marks1 in your API)
+        public int Marks1 { get; set; }                  // Marks.Marks (or Marks1 in your API)
     }
 }
 

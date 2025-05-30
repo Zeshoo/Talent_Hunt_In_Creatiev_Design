@@ -9,6 +9,8 @@ namespace Talent_Hunt.Models
     {
         public TaskDto Task { get; set; }
         public List<SubmissionViewModel> Submissions { get; set; }
+
+        public int marks1 { get; set; } // Marks1 from the API, if needed
     }
 
 }

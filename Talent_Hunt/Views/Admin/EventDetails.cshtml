@@ -45,27 +45,32 @@
                     <i class="fas fa-user-plus me-2 text-warning"></i>Assign Member
                 </a>
                 @*<a href="@Url.Action("NotificationToAssignMember", "Admin", new { eventId = Model.Id })"
-                   class="dropdown-item mb-2 rounded-3 custom-button">
-                    <i class="fas fa-chart-line me-2 text-info"></i>Send Notification to Committee Members
-                </a>*@
+           class="dropdown-item mb-2 rounded-3 custom-button">
+            <i class="fas fa-chart-line me-2 text-info"></i>Send Notification to Committee Members
+        </a>*@
                 @*<a href="@Url.Action("ShowAssignedMembers", "Admin", new { eventId = Model.Id })"
-                   class="dropdown-item mb-2 rounded-3 custom-button">
-                    <i class="fas fa-users-cog me-2 text-dark"></i>Assigned Members
-                </a>*@
+           class="dropdown-item mb-2 rounded-3 custom-button">
+            <i class="fas fa-users-cog me-2 text-dark"></i>Assigned Members
+        </a>*@
                 <a href="@Url.Action("ViewApplications", "Admin", new { eventId = Model.Id })"
                    class="dropdown-item mb-2 rounded-3 custom-button">
                     <i class="fas fa-chart-bar me-2 text-success"></i>View Applications
                 </a>
                 <div class="dropdown-divider"></div>
+                <a href="@Url.Action("EventReport", "Admin", new { eventId = Model.Id })"
+                   class="dropdown-item mb-2 rounded-3 custom-button">
+                    <i class="fas fa-chart-bar me-2 text-success"></i>Event Report
+                </a>
+                <div class="dropdown-divider"></div>
                 @*<a href="@Url.Action("CreateTask", "Admin", new { eventId = Model.Id })" class="dropdown-item mb-2 rounded-3 custom-button">
-                    <i class="fas fa-list-check me-2 text-secondary"></i>Create Task
-                </a>*@
+            <i class="fas fa-list-check me-2 text-secondary"></i>Create Task
+        </a>*@
 
                 <a href="@Url.Action("ShowTasks", "Admin", new { eventId = Model.Id })"
                    class="dropdown-item mb-2 rounded-3 custom-button">
                     <i class="fas fa-list-check me-2 text-secondary"></i>Show Tasks
                 </a>
-                
+
             </div>
         </div>
     </div>

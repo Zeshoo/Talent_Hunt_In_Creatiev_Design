@@ -8,10 +8,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-
 
 using Talent_Hunt.Models;
 //using System.Net.Http.Formatting;
@@ -554,16 +554,14 @@ namespace Talent_Hunt.Controllers
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    int userId = (int)Session["UserId"];
-
                     client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
-                    HttpResponseMessage response = await client.GetAsync($"api/TaskDetails/{id}");
+                    HttpResponseMessage response = await client.GetAsync($"api/Main/TaskDetails?id={id}");
 
                     if (response.IsSuccessStatusCode)
                     {
                         string jsonString = await response.Content.ReadAsStringAsync();
                         var taskData = JsonConvert.DeserializeObject<Talent_Hunt.Models.Task>(jsonString);
-                        return View(taskData);  // <-- Make sure your view expects Talent_Hunt.Models.Task
+                        return View(taskData);  // Make sure your view expects Talent_Hunt.Models.Task
                     }
                     else if (response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -583,6 +581,7 @@ namespace Talent_Hunt.Controllers
                 return View("Error");
             }
         }
+
 
 
 
@@ -835,6 +834,37 @@ namespace Talent_Hunt.Controllers
             TempData["ErrorMessage"] = "Failed to create task.";
             return View(model);
         }
+
+
+
+        public async Task<ActionResult> EventReport(int eventId)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost/TalentHunt1/");
+                HttpResponseMessage response = await client.GetAsync($"api/Main/GenerateEventReport?eventId={eventId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+
+                    // ✅ Use Newtonsoft safely (JsonConvert)
+                    var eventReport = JsonConvert.DeserializeObject<EventReportViewModel>(jsonString);
+                    return View(eventReport);
+                }
+                else
+                {
+                    ViewBag.Error = "Failed to load report.";
+                    return View();
+                }
+            }
+        }
+
+
+
+
+
+
         [HttpGet]
         public async Task<ActionResult> TaskDetailsForCommitteeMember(int id)
         {

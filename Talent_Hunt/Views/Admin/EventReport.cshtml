@@ -1,0 +1,70 @@
+﻿@model Talent_Hunt.Models.EventReportViewModel
+
+@{
+    ViewBag.Title = "Event Report";
+}
+
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <h2 class="display-6">@Model.Title - Event Report</h2>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger shadow-sm rounded">
+            @ViewBag.Error
+        </div>
+    }
+    else
+    {
+        <div class="card shadow mb-5 border-0">
+            <div class="card-body bg-light">
+                <h4 class="card-title text-primary">@Model.Title</h4>
+                <p class="mb-2"><strong>Event Date:</strong> @Model.EventDate</p>
+                <p><strong>Total Participants:</strong> @Model.ParticipantCount</p>
+            </div>
+        </div>
+
+        <div class="card shadow border-0">
+            <div class="card-body">
+                <h5 class="card-title text-secondary mb-3">Submissions</h5>
+
+                @if (Model.Submissions != null && Model.Submissions.Any())
+                {
+                    <table class="table table-hover table-bordered text-center align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Student Name</th>
+                                <th>Submission Time</th>
+                                @*<th>File</th>*@
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Submissions.Count; i++)
+                            {
+                                var submission = Model.Submissions[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@submission.StudentName</td>
+                                    <td>@submission.SubmissionTime</td>
+                                    @*<td>
+                                            <a href="@Url.Content(submission.PathofSubmission)" target="_blank">View File</a>
+                                        </td>*@
+                                    <td>
+                                        @(submission.Marks.HasValue ? submission.Marks.Value.ToString() : "Not Marked")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">No submissions found for this event.</p>
+                }
+            </div>
+        </div>
+    }
+</div>
